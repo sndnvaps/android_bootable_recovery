@@ -63,6 +63,13 @@ typedef struct rgba8888 {
         char a;
 } rgba8888_t;
 
+typedef struct rgbx8888 {
+	char r;
+	char g;
+	char b;
+	char x;
+} rgbx8888_t;
+
 typedef struct rgb565 {
         short b:5;
         short g:6;
@@ -78,6 +85,8 @@ int abgr8888_to_rgb888(const char* src, char* dst, size_t pixel);
 int bgra8888_to_rgb888(const char* src, char* dst, size_t pixel);
 
 int rgba8888_to_rgb888(const char* src, char* dst, size_t pixel);
+
+int rgbx8888_to_rgb888(const char* src, char* dst, size_t pixel);
 
 int save_png(const char* path, const char* data, int width, int height);
 

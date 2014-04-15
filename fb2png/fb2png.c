@@ -41,21 +41,26 @@ int get_device_fb(const char* path, struct fb *fb)
     int offset;
     char *x;
     struct fb_var_screeninfo vinfo;
+    struct fb_fix_screeninfo fi;
 
     fd = open(path, O_RDONLY);
     if (fd < 0) return -1;
 
     if(ioctl(fd, FBIOGET_VSCREENINFO, &vinfo) < 0) {
-        D("ioctl failed, %s\n", strerror(errno));
+        D(" failed to get fbo info .., %s\n", strerror(errno));
+	close(fd);
         return -1;
     }
 
     bytespp = vinfo.bits_per_pixel / 8;
 
+     vinfo.xres_virtual = fi.line_length / PIXEL_SIZE;
+
     fb->bpp = vinfo.bits_per_pixel;
     fb->size = vinfo.xres * vinfo.yres * bytespp;
     fb->width = vinfo.xres;
     fb->height = vinfo.yres;
+#if 0
     fb->red_offset = vinfo.red.offset;
     fb->red_length = vinfo.red.length;
     fb->green_offset = vinfo.green.offset;
@@ -64,6 +69,15 @@ int get_device_fb(const char* path, struct fb *fb)
     fb->blue_length = vinfo.blue.length;
     fb->alpha_offset = vinfo.transp.offset;
     fb->alpha_length = vinfo.transp.length;
+#endif
+    fb->red_offset = 24;
+    fb->red_length = 8;
+    fb->green_offset = 16;
+    fb->green_length = 8;
+    fb->blue_offset = 8;
+    fb->blue_length = 8;
+    fb->alpha_offset = 0;
+    fb->alpha_length = 8;
 
 #ifdef ANDROID
     /* HACK: for several of 3d cores a specific alignment

@@ -12,12 +12,12 @@ endif
 
 ifeq ($(TW_TARGET_USES_QCOM_BSP), true)
   LOCAL_CFLAGS += -DMSM_BSP
-  ifeq ($(TARGET_PREBUILT_KERNEL),)
+  #ifeq ($(TARGET_PREBUILT_KERNEL),)
     LOCAL_ADDITIONAL_DEPENDENCIES := $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
     LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
-  else
-    LOCAL_C_INCLUDES += bootable/recovery/minuitwrp/include
-  endif
+ # else
+   # LOCAL_C_INCLUDES += bootable/recovery/minuitwrp/include
+ # endif
 else
   LOCAL_C_INCLUDES += bootable/recovery/minuitwrp/include
 endif

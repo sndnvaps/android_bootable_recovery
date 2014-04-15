@@ -28,6 +28,10 @@
 
 #include <linux/fb.h>
 #include <linux/kd.h>
+#ifdef MSM_BSP 
+#include <linux/msm_mdp.h>
+#include <linux/msm_ion.h>
+#endif 
 
 #include <pixelflinger/pixelflinger.h>
 
@@ -103,6 +107,39 @@ static void print_fb_var_screeninfo()
 	printf("vi.grayscale: %d\n", vi.grayscale);
 }
 #endif
+
+static int write_int(char const* path, int value)
+{
+    int fd;
+    static int already_warned = 0;
+
+    fd = open(path, O_RDWR);
+    if (fd >= 0) {
+        char buffer[20];
+        int bytes = sprintf(buffer, "%d\n", value);
+        int amt = write(fd, buffer, bytes);
+        close(fd);
+        return amt == -1 ? -1 : 0;
+    } else {
+        if (already_warned == 0) {
+            printf("write_int failed to open %s\n", path);
+            already_warned = 1;
+        }
+        return -1;
+    }
+}
+
+static int set_light_backlight(int brightness)
+{
+    int err = 0;
+    err = write_int("/sys/class/leds/lcd-backlight/brightness", brightness);
+    return err;
+}
+
+
+inline size_t round_to_pagesize(size_t x) {
+	return (x + (PAGE_SIZE - 1)) & ~(PAGE_SIZE - 1);
+}
 
 #ifdef MSM_BSP
 int getLeftSplit(void) {
@@ -257,6 +294,8 @@ static int get_framebuffer(GGLSurface *fb)
 
     if (!has_overlay) {
         printf("Not using qualcomm overlay, '%s'\n", fi.id);
+	//size_t size = round_to_pagesize(vi.yres * fi.line_length) * NUM_BUFFERS;
+	//bits = mmap(0, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
         bits = mmap(0, fi.smem_len, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
         if (bits == MAP_FAILED) {
             perror("failed to mmap framebuffer");
@@ -328,6 +367,14 @@ static void get_memory_surface(GGLSurface* ms) {
 static void set_active_framebuffer(unsigned n)
 {
     if (n > 1  || !double_buffering) return;
+
+    //add VSYNC support 
+#if MSM_BSP  
+    int enabled = 1;
+    if (ioctl(gr_fb_fd, MSMFB_OVERLAY_VSYNC_CTRL, &enabled) < 0) {
+	    perror("Enable VSYNC failed");
+    }
+#endif    
     vi.yres_virtual = vi.yres * NUM_BUFFERS;
     vi.yoffset = n * vi.yres;
 //    vi.bits_per_pixel = PIXEL_SIZE * 8;
@@ -789,8 +836,9 @@ int gr_init(void)
     gl->enable(gl, GGL_BLEND);
     gl->blendFunc(gl, GGL_SRC_ALPHA, GGL_ONE_MINUS_SRC_ALPHA);
 
-//    gr_fb_blank(true);
-//    gr_fb_blank(false);
+    gr_fb_blank(true);
+    gr_fb_blank(false);
+    set_light_backlight(50);
 
     if (!alloc_ion_mem(fi.line_length * vi.yres))
         allocate_overlay(gr_fb_fd, gr_framebuffer);

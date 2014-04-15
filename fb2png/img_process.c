@@ -147,6 +147,32 @@ int rgba8888_to_rgb888(const char* src, char* dst, size_t pixel)
     return 0;
 }
 
+int rgbx8888_to_rgb888(const char* src, char* dst, size_t pixel)
+{
+    int i;
+    struct rgbx8888  *from;
+    struct rgb888  *to;
+
+    from = (struct rgbx8888 *) src;
+    to = (struct rgb888 *) dst;
+
+    i = 0;
+    /* traverse pixel of the row */
+    while(i++ < pixel) {
+
+        to->r = from->r;
+        to->g = from->g;
+        to->b = from->b;
+
+        to++;
+        from++;
+    }
+
+    return 0;
+}
+
+
+
 static void
 stdio_write_func (png_structp png, png_bytep data, png_size_t size)
 {

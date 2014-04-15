@@ -296,6 +296,7 @@ static void * input_thread(void *cookie)
 			{
 				if (!drag)
 				{
+				//	if( x != 0 && y != 0) {
 #ifdef _EVENT_LOGGING
 					LOGERR("TOUCH_START: %d,%d\n", x, y);
 #endif
@@ -309,6 +310,7 @@ static void * input_thread(void *cookie)
 #ifndef TW_NO_SCREEN_TIMEOUT
 					blankTimer.resetTimerAndUnblank();
 #endif
+				//	}
 				}
 				else
 				{

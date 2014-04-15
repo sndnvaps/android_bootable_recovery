@@ -57,6 +57,7 @@ static int fb_get_format(const struct fb *fb)
 #define FB_FORMAT_RGBA8888  3
 #define FB_FORMAT_ABGR8888  4
 #define FB_FORMAT_BGRA8888  5
+#define FB_FORMAT_RGBX8888  6 //for xiaomi device 
 
     /* TODO: use offset */
     if (fb->bpp == 16)
@@ -74,6 +75,9 @@ static int fb_get_format(const struct fb *fb)
 
     if (bo == 0)
         return FB_FORMAT_BGRA8888;
+
+    if (ro == 24 && bo == 8)
+	    return FB_FORMAT_RGBX8888;
 
     /* fallback */
     return FB_FORMAT_UNKNOWN;
@@ -117,6 +121,10 @@ int fb_save_png(const struct fb *fb, const char *path)
             ret = rgba8888_to_rgb888(fb->data,
                     rgb_matrix, fb->width * fb->height);
             break;
+	case FB_FORMAT_RGBX8888:
+	    ret = rgbx8888_to_rgb888(fb->data,
+			    rgb_matrix, fb->width * fb->height);
+	    break;
         default:
             D("Unsupported framebuffer type.");
             break;

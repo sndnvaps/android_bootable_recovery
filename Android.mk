@@ -14,6 +14,9 @@
 
 LOCAL_PATH := $(call my-dir)
 
+
+include $(CLEAR_VARS)
+
 TARGET_RECOVERY_GUI := true
 
 LOCAL_SRC_FILES := \
@@ -36,7 +39,7 @@ ifneq ($(TARGET_RECOVERY_REBOOT_SRC),)
   LOCAL_SRC_FILES += $(TARGET_RECOVERY_REBOOT_SRC)
 endif
 
-LOCAL_MODULE := recovery
+
 
 #LOCAL_FORCE_STATIC_EXECUTABLE := true
 
@@ -284,6 +287,9 @@ endif
 ifneq ($(wildcard bionic/libc/include/sys/capability.h),)
     LOCAL_CFLAGS += -DHAVE_CAPABILITIES
 endif
+
+
+LOCAL_MODULE := recovery
 
 include $(BUILD_EXECUTABLE)
 

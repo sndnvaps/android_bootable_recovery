@@ -34,6 +34,7 @@ struct fb {
     unsigned int green_length;
     unsigned int alpha_offset;
     unsigned int alpha_length;
+    unsigned int stride; //for xiaomi device 
     void* data;
 };
 
