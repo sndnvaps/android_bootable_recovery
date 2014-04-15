@@ -1001,7 +1001,7 @@ bool TWPartition::Mount(bool Display_Error) {
 			}
 		} else {
 #endif
-			if (Display_Error)
+			if (!Removable && Display_Error)
 				LOGERR("Unable to mount '%s'\n", Mount_Point.c_str());
 			else
 				LOGINFO("Unable to mount '%s'\n", Mount_Point.c_str());
@@ -1312,7 +1312,9 @@ bool TWPartition::Wipe_Encryption() {
 		if (Has_Data_Media && !Symlink_Mount_Point.empty()) {
 			Recreate_Media_Folder();
 		}
+#ifndef TW_OEM_BUILD
 		gui_print("You may need to reboot recovery to be able to use /data again.\n");
+#endif
 		return true;
 	} else {
 		Has_Data_Media = Save_Data_Media;
@@ -1556,6 +1558,10 @@ bool TWPartition::Wipe_F2FS() {
 }
 
 bool TWPartition::Wipe_Data_Without_Wiping_Media() {
+#ifdef TW_OEM_BUILD
+	// In an OEM Build we want to do a full format
+	return Wipe_Encryption();
+#else
 	string dir;
 	#ifdef HAVE_SELINUX
 	fixPermissions perms;
@@ -1599,6 +1605,7 @@ bool TWPartition::Wipe_Data_Without_Wiping_Media() {
 	}
 	gui_print("Dirent failed to open /data, error!\n");
 	return false;
+#endif // ifdef TW_OEM_BUILD
 }
 
 bool TWPartition::Backup_Tar(string backup_folder) {
@@ -1618,11 +1625,7 @@ bool TWPartition::Backup_Tar(string backup_folder) {
 
 	DataManager::GetValue(TW_USE_COMPRESSION_VAR, use_compression);
 	tar.use_compression = use_compression;
-	//exclude Google Music Cache
-	vector<string> excludedirs = du.get_absolute_dirs();
-	for (int i = 0; i < excludedirs.size(); ++i) {
-		tar.setexcl(excludedirs.at(i));
-	}
+
 #ifndef TW_EXCLUDE_ENCRYPTED_BACKUPS
 	DataManager::GetValue("tw_encrypt_backup", use_encryption);
 	if (use_encryption && Can_Encrypt_Backup) {
@@ -1822,9 +1825,7 @@ bool TWPartition::Update_Size(bool Display_Error) {
 	if (Has_Data_Media) {
 		if (Mount(Display_Error)) {
 			unsigned long long data_media_used, actual_data;
-			du.add_relative_dir("media");
 			Used = du.Get_Folder_Size("/data");
-			du.clear_relative_dir("media");
 			Backup_Size = Used;
 			int bak = (int)(Used / 1048576LLU);
 			int fre = (int)(Free / 1048576LLU);

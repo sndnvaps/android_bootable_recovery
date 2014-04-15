@@ -67,10 +67,6 @@ void twrpTar::setdir(string dir) {
 	tardir = dir;
 }
 
-void twrpTar::setexcl(string exclude) {
-	tarexclude.push_back(exclude);
-}
-
 void twrpTar::setsize(unsigned long long backup_size) {
 	Total_Backup_Size = backup_size;
 }
@@ -238,6 +234,7 @@ int twrpTar::createTarFork() {
 				enc[i].ItemList = &EncryptList;
 				enc[i].thread_id = i;
 				enc[i].use_encryption = use_encryption;
+				enc[i].setpassword(password);
 				enc[i].use_compression = use_compression;
 				enc[i].split_archives = 1;
 				LOGINFO("Start encryption thread %i\n", i);
@@ -383,6 +380,7 @@ int twrpTar::extractTarFork() {
 					if (TWFunc::Path_Exists(actual_filename)) {
 						thread_count++;
 						tars[i].basefn = basefn;
+						tars[i].setpassword(password);
 						tars[i].thread_id = i;
 						LOGINFO("Creating extract thread ID %i\n", i);
 						ret = pthread_create(&tar_thread[i], &tattr, extractMulti, (void*)&tars[i]);
@@ -447,7 +445,6 @@ int twrpTar::Generate_TarList(string Path, std::vector<TarListStruct> *TarList, 
 	string FileName;
 	struct TarListStruct TarItem;
 	string::size_type i;
-	bool skip;
 
 	if (has_data_media == 1 && Path.size() >= 11 && strncmp(Path.c_str(), "/data/media", 11) == 0)
 		return 0; // Skip /data/media
@@ -459,20 +456,9 @@ int twrpTar::Generate_TarList(string Path, std::vector<TarListStruct> *TarList, 
 		return -1;
 	}
 	while ((de = readdir(d)) != NULL) {
-		// Skip excluded stuff
 		FileName = Path + "/";
 		FileName += de->d_name;
-		if (tarexclude.size() > 0) {
-			skip = false;
-			for (i = 0; i < tarexclude.size(); i++) {
-				if (FileName == tarexclude[i]) {
-					LOGINFO("Excluding %s\n", FileName.c_str());
-					break;
-				}
-			}
-			if (skip)
-				continue;
-		}
+
 		if (has_data_media == 1 && FileName.size() >= 11 && strncmp(FileName.c_str(), "/data/media", 11) == 0)
 			continue; // Skip /data/media
 		if (de->d_type == DT_BLK || de->d_type == DT_CHR)
