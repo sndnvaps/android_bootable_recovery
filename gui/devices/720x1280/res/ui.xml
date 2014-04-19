@@ -2832,7 +2832,7 @@
 
 			<object type="action">
 				<touch key="back" />
-				<action function="page">advanced</action>
+				<action function="page">main</action>
 			</object>
 
 			<object type="template" name="footer" />
