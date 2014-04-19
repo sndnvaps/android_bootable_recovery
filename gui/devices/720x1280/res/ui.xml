@@ -2796,13 +2796,14 @@
 				<action function="page">filemanagerlist</action>
 			</object>
 
-			<object type="button">
+
+                        <object type="button">
 				<highlight color="%highlight_color%" />
 				<placement x="%col1_x%" y="%row3_y%" />
 				<font resource="font" color="%button_text_color%" />
-				<text>Terminal Command</text>
+				<text>ADB Sideload</text>
 				<image resource="main_button" />
-				<action function="page">terminalfolder</action>
+				<action function="page">sideload</action>
 			</object>
 
 			<object type="button">
@@ -2813,43 +2814,16 @@
 				<image resource="main_button" />
 				<action function="reload"></action>
 			</object>
-
+			
 			<object type="button">
 				<highlight color="%highlight_color%" />
 				<placement x="%col1_x%" y="%row4_y%" />
 				<font resource="font" color="%button_text_color%" />
-				<text>ADB Sideload</text>
+				<text>TualDualboot</text>
 				<image resource="main_button" />
-				<action function="page">sideload</action>
+				<action function="page">tualdualboot</action>
 			</object>
-
-			<object type="button">
-				<highlight color="%highlight_color%" />
-				<condition var1="tw_show_dumlock" var2="1" />
-				<placement x="%col2_x%" y="%row4_y%" />
-				<font resource="font" color="%button_text_color%" />
-				<text>HTC Dumlock</text>
-				<image resource="main_button" />
-				<action function="page">htcdumlock</action>
-			</object>
-
-			<object type="button">
-				<highlight color="%highlight_color%" />
-				<condition var1="tw_has_injecttwrp" var2="1" />
-				<placement x="%col2_x%" y="%row4_y%" />
-				<font resource="font" color="%button_text_color%" />
-				<text>Re-Inject TWRP</text>
-				<image resource="main_button" />
-				<actions>
-					<action function="set">tw_back=advanced</action>
-					<action function="set">tw_action=reinjecttwrp</action>
-					<action function="set">tw_text1=Re-Inject TWRP?</action>
-					<action function="set">tw_action_text1=Re-Injecting TWRP...</action>
-					<action function="set">tw_complete_text1=TWRP Injection Complete</action>
-					<action function="set">tw_slider_text=Swipe to Confirm</action>
-					<action function="page">confirm_action</action>
-				</actions>
-			</object>
+                        
 
 			<object type="action">
 				<touch key="home" />
@@ -2858,7 +2832,151 @@
 
 			<object type="action">
 				<touch key="back" />
+				<action function="page">advanced</action>
+			</object>
+
+			<object type="template" name="footer" />
+		</page>
+
+                
+	
+		<page name="tualdualboot">
+			<object type="template" name="header" />
+
+			<object type="text" color="%text_color%">
+				<font resource="font" />
+				<placement x="%center_x%" y="%row1_header_y%" placement="5" />
+				<text>TualDualboot</text>
+			</object>
+
+			
+			<object type="button">
+				<highlight color="%highlight_color%" />
+				<placement x="%col1_x%" y="%row1_y%" />
+				<font resource="font" color="%button_text_color%" />
+				<text>active system 0/1</text>
+				<image resource="main_button" />
+				<action function="page">SetActiveSystem</action>
+			</object>
+		       
+
+			<!-- set tualdualboot functions 
+			<object type="button">
+				<highlight color="%highlight_color%" />
+				<placement x="%col2_x%" y="%row1_y%" />
+				<font resource="font" color="%button_text_color%" />
+				<text>Enable/Disable TualDualboot</text>
+				<image resource="main_button" />
+				<action function="page">SetTDB</action>
+			</object>
+                           -->
+
+			<object type="action">
+				<touch key="home" />
 				<action function="page">main</action>
+			</object>
+
+			<object type="action">
+				<touch key="back" />
+				<action function="page">advanced</action>
+			</object>
+
+			<object type="template" name="footer" />
+		</page>
+	
+		<page name="SetActiveSystem">
+			<object type="template" name="header" />
+
+			<object type="text" color="%text_color%">
+				<font resource="font" />
+				<placement x="%center_x%" y="%row1_header_y%" placement="5" />
+				<text>Set Active System 0/1</text>
+			</object>
+
+			<object type="checkbox">
+				<placement x="%col1_x%" y="%row2_text_y%" />
+				<font resource="font" color="%text_color%" />
+				<text>active system0.</text>
+				<data variable="tw_system0" />
+				<image checked="checkbox_true" unchecked="checkbox_false" />
+			</object>
+
+			<object type="checkbox">
+				<placement x="%col1_x%" y="%row3_text_y%" />
+				<font resource="font" color="%text_color%" />
+				<text>active system1.</text>
+				<data variable="tw_system1" />
+				<image checked="checkbox_true" unchecked="checkbox_false" />
+			</object>
+
+
+			<object type="slider">
+				<placement x="%slider_x%" y="%slider_y%" />
+				<resource base="slider" used="slider-used" touch="slider-touch" />
+				<actions>
+					<action function="set">tw_back=advanced</action>
+					<action function="set">tw_action=active_system</action>
+					<action function="set">tw_action_text1=active system 0/1</action>
+					<action function="set">tw_complete_text1=success</action>
+					<action function="set">tw_slider_text=Swipe to Confirm</action>
+					<!--
+					<action function="set">tw_page_done=1</action>
+                                         -->
+				
+					<action function="page">action_page</action>
+                                    
+				</actions>
+			</object>
+			<!-- 
+			<object type="button">
+				<highlight color="%highlight_color%" />
+				<placement x="%col1_x%" y="%row1_y%" />
+				<font resource="font" color="%button_text_color%" />
+				<text>system0</text>
+				<image resource="main_button" />
+				<actions>
+					<action function="set">tw_back=SetActiveSystem</action>
+					<action function="set">tw_action=active_system</action>
+					<action function="set">tw_action_param=system0</action>
+					<action function="set">tw_has_action2=0</action>
+					<action function="set">tw_text1=Set active system function</action>
+					<action function="set">tw_action_text1=Set Active system0...</action>
+					<action function="set">tw_complete_text1=Success set active ...</action>
+					<action function="set">tw_slider_text=Swipe to Confirm</action>
+					<action function="page">confirm_action</action>
+				</actions>
+                           
+			</object>
+
+			<object type="button">
+				<highlight color="%highlight_color%" />
+				<placement x="%col2_x%" y="%row1_y%" />
+				<font resource="font" color="%button_text_color%" />
+				<text>system1</text>
+				<image resource="main_button" />
+				<actions>
+					<action function="set">tw_back=SetActiveSystem</action>
+					<action function="set">tw_action=active_system</action>
+					<action function="set">tw_action_param=system1</action>
+					<action function="set">tw_has_action2=0</action>
+					<action function="set">tw_text1=Set active system function</action>
+					<action function="set">tw_action_text1=Set Active system1...</action>
+					<action function="set">tw_complete_text1=Success set active ...</action>
+					<action function="set">tw_slider_text=Swipe to Confirm</action>
+					<action function="page">confirm_action</action>
+				</actions>
+                        
+			</object>
+                         -->
+
+			<object type="action">
+				<touch key="home" />
+				<action function="page">main</action>
+			</object>
+
+			<object type="action">
+				<touch key="back" />
+				<action function="page">tualdualboot</action>
 			</object>
 
 			<object type="template" name="footer" />

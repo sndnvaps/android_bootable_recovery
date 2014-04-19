@@ -401,6 +401,34 @@ int GUIAction::doAction(Action action, int isThreaded /* = 0 */)
 
 		return 0;
 	}
+
+	if (function == "active_system") {
+		int ac_st_system0;
+		int ac_st_system1;
+		int ret_val = 0;
+		DataManager::GetValue("tw_system0", ac_st_system0);
+		DataManager::GetValue("tw_system1", ac_st_system1);
+		operation_start("active_system");
+		if (ac_st_system0 == 1 && ac_st_system1 == 1)
+			ret_val = 1;
+		if (ac_st_system0) {
+		DataManager::SetValue("tw_active_system", "system0");
+		LOGINFO("tw_active_system = system0\n");
+			TWFunc::setBootmode("boot-system0");
+			sync();
+		}
+		if (ac_st_system1) {
+			DataManager::SetValue("tw_active_system", "system1");
+			LOGINFO("tw_active_system = system1\n");
+			TWFunc::setBootmode("boot-system1");
+			sync();
+		}
+		operation_end(0, simulate);
+
+
+		return 0;
+	}
+
 	if (function == "home")
 	{
 		PageManager::SelectPackage("TWRP");

@@ -181,4 +181,7 @@
 #define SCRIPT_FILE_TMP "/tmp/openrecoveryscript"
 #define TMP_LOG_FILE "/tmp/recovery.log"
 
+// dualboot 
+#define TW_SYSTEM0              "tw_system0"
+#define TW_SYSTEM1              "tw_system1"
 #endif  // _VARIABLES_HEADER_
