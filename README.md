@@ -11,3 +11,9 @@ You can find a compiling guide [here](http://forum.xda-developers.com/showthread
 [More information about the project.](http://www.teamw.in/project/twrp2 "More Information")
 
 If you have code changes to submit those should be pushed to our gerrit instance.  A guide can be found [here](http://teamw.in/twrp2-gerrit "Gerrit Guide").
+
+
+
+##TODO:
+ - [ ] Add TDB(TrueDualBoot) Feature to twrp 
+ - [x] Support xiaomi device  
