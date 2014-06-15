@@ -15,5 +15,9 @@ If you have code changes to submit those should be pushed to our gerrit instance
 
 
 ##TODO:
+
+ - [x] Support xiaomi device 
  - [ ] Add TDB(TrueDualBoot) Feature to twrp 
- - [x] Support xiaomi device  
+ - [ ] Parse Active system_num(PAS) from `/proc/cmdline`
+ - [ ] Detected Dual system mode(`DSM`) or One system mode(`OSM`) 
+  
