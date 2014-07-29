@@ -460,11 +460,6 @@ int GUIAction::doAction(Action action, int isThreaded /* = 0 */)
         DataManager::GetValue("tw_lang_name_zh-CN",lang_zh);
         DataManager::GetValue("tw_lang_name",lang_name);
 
-
-
-
-		operation_start("Reload Theme");
-
         if (lang_en == 1  && lang_name == "en")
             return 0;
         if (lang_zh == 1 && lang_name == "zh-CN")
@@ -475,6 +470,11 @@ int GUIAction::doAction(Action action, int isThreaded /* = 0 */)
 
         if (lang_zh == 1 && lang_en == 0)
             DataManager::SetValue("tw_lang_name","zh-CN");
+
+
+		operation_start("Reload Theme");
+
+
 		theme_path = DataManager::GetSettingsStoragePath();
 		if (PartitionManager.Mount_By_Path(theme_path.c_str(), 1) < 0) {
 			LOGERR("Unable to mount %s during reload function startup.\n", theme_path.c_str());
