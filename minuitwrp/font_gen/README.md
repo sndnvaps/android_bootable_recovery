@@ -1,3 +1,15 @@
+#生成font_cn_WxH.h || font_cn_WxH.dat 
+
+
+为了能正常使用font_h.py ,生成中文字体，
+需要准备 simhei.ttf `这个是 宋体`
+需要准备  msyh.ttf `这个是 微软雅黑`,必须要修改这两个英文名字 
+因为它们定义在font_h.py文件中
+ 
+
+
+
+
 python 版本2.7.X
 
 为了能方便生成中文字体和相应的font.dat系统中需要安装 python PIL,Image,ImageMack 

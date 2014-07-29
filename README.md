@@ -1,3 +1,12 @@
+## zh-CN 中文和英文切换版本由 @sndnvaps 修改
+    参考 @syhost的代码进行修改
+
+#中文字库的生成文件，经过一些修改（目的是为了生成graphics.c 中需要的参数，并解决编译出错)
+
+#版本 2.7.0.0 
+#Version 2.7.0.0 
+
+
 **Team Win Recovery Project (TWRP)**
 
 The goal of this branch is to rebase TWRP onto AOSP while maintaining as much of the original AOSP code as possible. This goal should allow us to apply updates to the AOSP code going forward with little to no extra work.  With this goal in mind, we will carefully consider any changes needed to the AOSP code before allowing them.  In most cases, instead of changing the AOSP code, we'll create our own functions instead.  The only changes that should be made to AOSP code should be those affecting startup of the recovery and some of the make files.
@@ -15,7 +24,7 @@ If you have code changes to submit those should be pushed to our gerrit instance
 
 
 ##TODO:
-
+ - [x] 支持中文和英文双语言切换 （在高级功能里面)
  - [x] Support xiaomi device 
  - [ ] Add TDB(TrueDualBoot) Feature to twrp 
  - [ ] Parse Active system_num(PAS) from `/proc/cmdline`
