@@ -2,12 +2,12 @@ LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 
-LOCAL_SRC_FILES := events.c resources.c graphics_overlay.c
+LOCAL_SRC_FILES := events.c resources.c #graphics_overlay.c
 
 ifneq ($(TW_BOARD_CUSTOM_GRAPHICS),)
     LOCAL_SRC_FILES += $(TW_BOARD_CUSTOM_GRAPHICS)
 else
-    LOCAL_SRC_FILES += graphics.c
+    LOCAL_SRC_FILES += graphics_cn.c
 endif
 
 ifeq ($(TW_TARGET_USES_QCOM_BSP), true)
@@ -81,6 +81,8 @@ endif
 ifneq ($(BOARD_USE_CUSTOM_RECOVERY_FONT),)
   LOCAL_CFLAGS += -DBOARD_USE_CUSTOM_RECOVERY_FONT=$(BOARD_USE_CUSTOM_RECOVERY_FONT)
 endif
+LOCAL_CFLAGS += -DBLACK_SCREEN_
+
 LOCAL_SHARED_LIBRARIES += libz libc libcutils libjpeg
 LOCAL_STATIC_LIBRARIES += libpng libpixelflinger_static
 LOCAL_MODULE_TAGS := eng
