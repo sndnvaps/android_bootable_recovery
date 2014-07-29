@@ -28,6 +28,9 @@
 #include <set>
 #include <time.h>
 
+
+#include "languages.hpp"
+
 extern "C" {
 #ifdef HAVE_SELINUX
 #include "../minzip/Zip.h"
