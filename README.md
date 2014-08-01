@@ -1,7 +1,12 @@
 ## zh-CN 中文和英文切换版本由 @sndnvaps 修改
+
     参考 @syhost的代码进行修改
 
 #中文字库的生成文件，经过一些修改（目的是为了生成graphics.c 中需要的参数，并解决编译出错)
+
+## 真实双系统已经完成95%了，能满足一般用户的需求了。
+
+    参考 @M1cha 和 @ivan秋叶随风 两位大神的代码进行再一步修改而成。
 
 #版本 2.7.0.0 
 #Version 2.7.0.0 
@@ -25,8 +30,8 @@ If you have code changes to submit those should be pushed to our gerrit instance
 
 ##TODO:
  - [x] 支持中文和英文双语言切换 （在高级功能里面)
- - [x] Support xiaomi device 
- - [ ] Add TDB(TrueDualBoot) Feature to twrp 
- - [ ] Parse Active system_num(PAS) from `/proc/cmdline`
- - [ ] Detected Dual system mode(`DSM`) or One system mode(`OSM`) 
+ - [x] Support xiaomi device    (支持小米手机)
+ - [x] Add TDB(TrueDualBoot) Feature to twrp (真实双系统功能)
+ - [x] Parse Active system_num(PAS) from `misc` partition (获取当前激活系统)
+ - [x] Detected Dual system mode(`DSM`) or One system mode(`OSM`) (判断双系统模式 或 单系统模式)
   
