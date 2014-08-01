@@ -293,8 +293,23 @@
 <text id="signature_verification">Zip file signature verification?</text>
 <text id="signature_verification">Zip file signature verification.</text>
 <text id="zip_complete">Zip Install Complete</text>
+<text id="sel_timezone">Select Time Zone:</text>
 <text id="set_lang_en">Set lang to En</text>
 <text id="set_lang_zh">Set lang to zh-CN</text>
 <text id="set_lang_en">Set lang to En</text>
 <text id="set_lang_zh">Set lang to zh-CN</text>
-
+<text id="true_tdb">TrueDualboot</text>
+<text id="main_active_system">active system 0/1</text>
+<text id="ac_system0">active system0.</text>
+<text id="ac_system1">active system1.</text>
+<text id="current_system">Current system : %tw_current_system%</text>
+<text id="tdb_functions">tdb_func</text>
+<text id="tdb_st">tdb state : %tw_tdb_state%</text>
+<text id="e_tdb">Enable TDB</text>
+<text id="d_tdb">Disable TDB</text>
+<action id="text_en_tdb" function="set">tw_text1=Enable truedualboot?</action>
+<action id="text_en_tdb2" function="set">tw_action_text1=Enable truedualboot...</action>
+<action id="text_en_tdb_on" function="set">tw_complete_text1=Truedualboot on</action>
+<action id="text_dis_tdb" function="set">tw_text1=Disable truedualboot?</action>
+<action id="text_dis_tdb2" function="set">tw_action_text1=Disable truedualboot...</action>
+<action id="text_dis_tdb_off" function="set">tw_complete_text1=Truedualboot off</action>

@@ -41,6 +41,9 @@
 #include "twrpTar.hpp"
 #include "twrpDU.hpp"
 #include "fixPermissions.hpp"
+
+#include "tdb-func.hpp"
+
 extern "C" {
 	#include "mtdutils/mtdutils.h"
 	#include "mtdutils/mounts.h"
@@ -226,6 +229,7 @@ bool TWPartition::Process_Fstab_Line(string Line, bool Display_Error) {
 				// Alternate Block Device
 				Alternate_Block_Device = ptr;
 				Find_Real_Block_Device(Alternate_Block_Device, Display_Error);
+                FindBlockStat(st,Alternate_Block_Device);//find the block stat for tdb
 			} else if (strlen(ptr) > 7 && strncmp(ptr, "length=", 7) == 0) {
 				// Partition length
 				ptr += 7;
@@ -261,6 +265,24 @@ bool TWPartition::Process_Fstab_Line(string Line, bool Display_Error) {
 			Storage_Name = Display_Name;
 			Wipe_Available_in_GUI = true;
 			Can_Be_Backed_Up = true;
+        } else if (Mount_Point == "/system1") {
+            Display_Name = "System1";
+            Backup_Display_Name = Display_Name;
+            Storage_Name = Display_Name;
+            Wipe_Available_in_GUI = true;
+            Can_Be_Backed_Up = true;
+        } else if (Mount_Point == "/modem") {
+            Display_Name = "Modem";
+            Backup_Display_Name = Display_Name;
+            Storage_Name = Display_Name;
+            Wipe_Available_in_GUI = false;
+            Can_Be_Backed_Up = false;
+        } else if (Mount_Point == "/modem1") {
+            Display_Name = "Modem1";
+            Backup_Display_Name = Display_Name;
+            Storage_Name = Display_Name;
+            Wipe_Available_in_GUI = false;
+            Can_Be_Backed_Up = false;
 		} else if (Mount_Point == "/data") {
 			Display_Name = "Data";
 			Backup_Display_Name = Display_Name;
@@ -388,7 +410,12 @@ bool TWPartition::Process_Fstab_Line(string Line, bool Display_Error) {
 			Backup_Display_Name = Display_Name;
 			DataManager::SetValue("tw_boot_is_mountable", 1);
 			Can_Be_Backed_Up = true;
-		}
+        } else if (Mount_Point == "/boot1") {
+            Display_Name = "Boot1";
+            Backup_Display_Name = Display_Name;
+            DataManager::SetValue("tw_boot_is_mountable", 1);
+            Can_Be_Backed_Up = true;
+        }
 #ifdef TW_EXTERNAL_STORAGE_PATH
 		if (Mount_Point == EXPAND(TW_EXTERNAL_STORAGE_PATH)) {
 			Is_Storage = true;
@@ -423,6 +450,10 @@ bool TWPartition::Process_Fstab_Line(string Line, bool Display_Error) {
 			Display_Name = "Boot";
 			Backup_Display_Name = Display_Name;
 			Can_Be_Backed_Up = true;
+        } else if (Mount_Point == "/boot1") {
+            Display_Name = "Boot1";
+            Backup_Display_Name = Display_Name;
+            Can_Be_Backed_Up = true;
 		} else if (Mount_Point == "/recovery") {
 			Display_Name = "Recovery";
 			Backup_Display_Name = Display_Name;
@@ -1186,6 +1217,12 @@ bool TWPartition::Wipe_AndSec(void) {
 }
 
 bool TWPartition::Backup(string backup_folder) {
+    if(TDBManager.GetTDBState()) {
+        string active_system = TDBManager.GetCurrentSystem();
+        if (active_system != "") {
+            DataManager::SetValue("tw_active_system",active_system);
+        }
+    }
 	if (Backup_Method == FILES)
 		return Backup_Tar(backup_folder);
 	else if (Backup_Method == DD)
@@ -1245,6 +1282,14 @@ bool TWPartition::Check_MD5(string restore_folder) {
 }
 
 bool TWPartition::Restore(string restore_folder) {
+
+    if(TDBManager.GetTDBState()) {
+        string active_system = TDBManager.GetCurrentSystem();
+        if (active_system != "") {
+            DataManager::SetValue("tw_active_system",active_system);
+        }
+    }
+
 	size_t first_period, second_period;
 	string Restore_File_System;
 
@@ -1623,7 +1668,11 @@ bool TWPartition::Backup_Tar(string backup_folder) {
 		return false;
 
 	TWFunc::GUI_Operation_Text(TW_BACKUP_TEXT, Backup_Display_Name, "Backing Up");
-	gui_print("Backing up %s...\n", Backup_Display_Name.c_str());
+    if (TDBManager.GetTDBState() && Backup_Name == "data") {
+        gui_print("Backing up /data/%s -> data.%s.win...\n",TDBManager.GetCurrentSystem().c_str(),Current_File_System.c_str());
+    } else {
+       gui_print("Backing up %s...\n", Backup_Display_Name.c_str());
+    }
 
 	DataManager::GetValue(TW_USE_COMPRESSION_VAR, use_compression);
 	tar.use_compression = use_compression;
@@ -1647,7 +1696,20 @@ bool TWPartition::Backup_Tar(string backup_folder) {
 	Full_FileName = backup_folder + "/" + Backup_FileName;
 	tar.has_data_media = Has_Data_Media;
 	Full_FileName = backup_folder + "/" + Backup_FileName;
+
+    if (Backup_Name == "data" && TDBManager.GetTDBState()) {
+        ///在此处添加对 真实双系统的支持
+        ///用于获取/data/.truedualboot 文件的状态
+        ///当备份分区为/data时，获取current_system 变量
+        ///current_system == "system0" || "system1"
+        ///string new_backup_path = Backup_Path + "/" + current_system;
+        string active_system;
+        DataManager::GetValue("tw_active_system",active_system);
+        string new_backup_path = Backup_Path + "/" + active_system;
+        tar.setdir(new_backup_path);
+    } else {
 	tar.setdir(Backup_Path);
+    }
 	tar.setfn(Full_FileName);
 	tar.setsize(Backup_Size);
 	if (tar.createTarFork() != 0)
@@ -1707,6 +1769,7 @@ bool TWPartition::Backup_Dump_Image(string backup_folder) {
 
 bool TWPartition::Restore_Tar(string restore_folder, string Restore_File_System) {
 	string Full_FileName, Command;
+    string full_path ="";
 	int index = 0;
 	char split_index[5];
 	bool ret = false;
@@ -1715,9 +1778,19 @@ bool TWPartition::Restore_Tar(string restore_folder, string Restore_File_System)
 		if (!Wipe_AndSec())
 			return false;
 	} else {
+
+        if (TDBManager.GetTDBState() && Mount_Point == "/data") {
+            string current_system = TDBManager.GetCurrentSystem();
+            full_path = Mount_Point + "/" + current_system;
+            gui_print("Wiping %s...\n",full_path.c_str());
+            LOGINFO("removedire %s, before restore it",full_path.c_str());
+            TWFunc::removeDir(full_path,false);
+            mkdir(full_path.c_str(),0755);// reconstruct it
+        } else {
 		gui_print("Wiping %s...\n", Display_Name.c_str());
 		if (!Wipe(Restore_File_System))
 			return false;
+        }
 	}
 	TWFunc::GUI_Operation_Text(TW_RESTORE_TEXT, Backup_Display_Name, "Restoring");
 	gui_print("Restoring %s...\n", Backup_Display_Name.c_str());
@@ -1727,7 +1800,11 @@ bool TWPartition::Restore_Tar(string restore_folder, string Restore_File_System)
 
 	Full_FileName = restore_folder + "/" + Backup_FileName;
 	twrpTar tar;
+    if (full_path != "") {
+        tar.setdir(full_path);
+    } else {
 	tar.setdir(Backup_Path);
+    }
 	tar.setfn(Full_FileName);
 	tar.backup_name = Backup_Name;
 #ifndef TW_EXCLUDE_ENCRYPTED_BACKUPS
@@ -1902,4 +1979,23 @@ void TWPartition::Recreate_AndSec_Folder(void) {
 		mkdir(Symlink_Path.c_str(), S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH); 
 		PartitionManager.UnMount_By_Path(Symlink_Mount_Point, true);
 	}
+}
+
+void TWPartition::FindBlockStat(struct stat &stt, string block_name) {
+    struct stat bst;
+    int ret = 0;
+    if (block_name.empty())
+        LOGERR("Cannot get stat of the empty block name..\n");
+
+    ret = stat(block_name.c_str(), &bst);
+    if (ret != 0) {
+        LOGERR("Cannot get stat of block %s \n",block_name.c_str());
+    } else {
+        stt = bst;
+    }
+
+}
+
+struct stat TWPartition::GetStat() {
+    return this->st;
 }

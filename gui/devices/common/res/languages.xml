@@ -88,14 +88,20 @@
 	<string id="text2_action_adbsidelod">tw_action_text2=Usage: adb sideload filename.zip</string>
 	<string id="text_complete_adbsidelod">tw_complete_text1=ADB Sideload Complete</string>
 	<string id="text_set_active">tw_action_text1=active system 0/1</string>
-	<string id="current_system">Current System: %current_system%</string>
+	<string id="text_en_tdb">tw_text1=Enable truedualboot?</string>
+	<string id="text_en_tdb2">tw_action_text1=Enable truddualboot ...</string>
+	<string id="text_en_tdb_on">tw_complete_text1=Truedualboot on </string>
+	<string id="text_dis_tdb">tw_text1=Disable truedualboot?</string>
+	<string id="text_dis_tdb2">tw_action_text1=Disable truedualboot ...</string>
+	<string id="text_dis_tdb_off">tw_complete_text1=Truedualboot off</string>
+
 	<string id="set_lang_en">Set lang to En</string>
 	<string id="set_lang_zh">Set lang to zh-CN</string>
-	<string id="truedualboot_menu">TualDualboot</string>
+	<string id="true_tdb">TrueDualBoot</string>
 	<string id="main_active_system">active system 0/1</string>
-	<string id="set_active_system">Set Active System 0/1</string>
-	<string id="active_system0">active system0.</string>
-	<string id="active_system1">active system1.</string>
+	<string id="current_system">Current System : %tw_current_system%</string>
+	<string id="ac_system0">active system0.</string>
+	<string id="ac_system1">active system1.</string>
 	<string id="utc-11">(UTC -11) Samoa, Midway Island</string>
 	<string id="utc-10">(UTC -10) Hawaii</string>
 	<string id="utc-9">(UTC -9) Alaska</string>
@@ -308,6 +314,11 @@
 	<string id="signature_verification">Zip file signature verification?</string>
 	<string id="signature_verification">Zip file signature verification.</string>
 	<string id="zip_complete">Zip Install Complete</string>
+	<string id="sel_timezone">Select Time Zone</string>
+	<string id="tdb_functions">TrueDualBoot func</string>
+	<string id="tdb_st">tdb state:%tw_tdb_state%</string>
+	<string id="e_tdb">Turn on tdb</string>
+	<string id="d_tdb">Turn off tdb</string>
 </Languages>
 
 <Languages Language="zh-CN">
@@ -398,15 +409,20 @@
 	<string id="text1_action_adbsidelod">tw_action_text1=ADB Sideload</string>
 	<string id="text2_action_adbsidelod">tw_action_text2=用法: adb sideload filename.zip</string>
 	<string id="text_complete_adbsidelod">tw_complete_text1=ADB Sideload 完成</string>
+	<string id="text_en_tdb">tw_text1=开启双系统支持?</string>
+	<string id="text_en_tdb2">tw_action_text1=正在处理中 ...</string>
+	<string id="text_en_tdb_on">tw_complete_text1=成功开启双系统支持 </string>
+	<string id="text_dis_tdb">tw_text1=关闭双系统支持?</string>
+	<string id="text_dis_tdb2">tw_action_text1=正在处理中 ...</string>
+	<string id="text_dis_tdb_off">tw_complete_text1=成功关闭双系统支持</string>
 	<string id="text_set_active">tw_action_text1=激活系统0/1</string>
-	<string id="current_system">当前系统: %current_system%</string>
-	<string id="truedualboot_menu">双系统设置</string>
 	<string id="main_active_system">激活系统0/1</string>
-	<string id="set_active_system">设置激活的系统</string>
+	<string id="true_tdb">双系统设置</string>
+	<string id="ac_system0">选择系统0</string>
+	<string id="ac_system1">选择系统1</string>
+	<string id="current_system">当前系统 : %tw_current_system%</string>
 	<string id="set_lang_zh">设置语言为中文</string>
 	<string id="set_lang_en">设置语言为英文</string>
-	<string id="active_system0">激活系统0</string>
-	<string id="active_system1">激活系统1.</string>
 	<string id="utc-11">(UTC -11) 美属萨摩亚, 中途岛</string>
 	<string id="utc-10">(UTC -10) 夏威夷</string>
 	<string id="utc-9">(UTC -9) 阿拉斯加</string>
@@ -619,5 +635,10 @@
 	<string id="signature_verification">Zip文件签名校验.</string>
 	<string id="signature_verification">Zip文件签名校验.</string>
 	<string id="zip_complete">Zip包安装完成</string>
+	<string id="sel_timezone">选择时区</string>
+	<string id="tdb_functions">真实双系统开关</string>
+	<string id="tdb_st">双系统状态 : %tw_tdb_state%</string>
+	<string id="e_tdb">开启双系统</string>
+	<string id="d_tdb">关闭双系统</string>
 </Languages>
 

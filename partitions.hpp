@@ -21,6 +21,8 @@
 
 #include <vector>
 #include <string>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include "twrpDU.hpp"
 
 #define MAX_FSTAB_LINE_LENGTH 2048
@@ -64,6 +66,9 @@ public:
 	void Check_FS_Type();                                                     // Checks the fs type using blkid, does not do anything on MTD / yaffs2 because this crashes on some devices
 	bool Update_Size(bool Display_Error);                                     // Updates size information
 	void Recreate_Media_Folder();                                             // Recreates the /data/media folder
+    void  FindBlockStat(struct stat &stt,string block_name);                   //find block stat for tdb
+    struct stat GetStat();                                                    //return the block stat
+
 
 public:
 	string Current_File_System;                                               // Current file system
@@ -104,6 +109,7 @@ private:
 	bool Find_MTD_Block_Device(string MTD_Name);                              // Finds the mtd block device based on the name from the fstab
 	void Recreate_AndSec_Folder(void);                                        // Recreates the .android_secure folder
 	void Mount_Storage_Retry(void);                                           // Tries multiple times with a half second delay to mount a device in case storage is slow to mount
+
 
 private:
 	bool Can_Be_Mounted;                                                      // Indicates that the partition can be mounted
@@ -151,6 +157,7 @@ private:
 	int Format_Block_Size;                                                    // Block size for formatting
 	bool Ignore_Blkid;                                                        // Ignore blkid results due to superblocks lying to us on certain devices / partitions
 	bool Retain_Layout_Version;                                               // Retains the .layout_version file during a wipe (needed on devices like Sony Xperia T where /data and /data/media are separate partitions)
+    struct stat st;                                                           // for tdb func
 #ifdef TW_INCLUDE_CRYPTO_SAMSUNG
 	string EcryptFS_Password;                                                 // Have to store the encryption password to remount
 #endif
@@ -158,6 +165,7 @@ private:
 friend class TWPartitionManager;
 friend class DataManager;
 friend class GUIPartitionList;
+friend class TDBFunc;
 };
 
 class TWPartitionManager

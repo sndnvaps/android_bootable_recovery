@@ -519,28 +519,6 @@ int TWFunc::tw_reboot(RebootCommand command)
 }
 
 
-int TWFunc::setBootmode(string bootmode) {
-   // open misc-partition
-   char *bm =(char*)bootmode.c_str();
-   LOGINFO("bootmode = %s\n", bm);
-   FILE* misc = fopen("/dev/block/platform/msm_sdcc.1/by-name/misc", "wb");
-   if (misc == NULL) {
-        LOGERR("Open misc partitions failed.\n");
-      return -1;
-   }
-
-   // write bootmode
-   fseek(misc, 0x1000, SEEK_SET);
-   if(fputs(bm, misc)<0) {
-      LOGERR("Write bootmode failed.\n");
-      return 0;
-   }
-
-   // close
-   fclose(misc);
-   return 0;
-}
-
 void TWFunc::check_and_run_script(const char* script_file, const char* display_name)
 {
 	// Check for and run startup script if script exists
@@ -1184,5 +1162,7 @@ std::vector<std::string> TWFunc::Split_String(const std::string& str, const std:
 
 	return res;
 }
+
+
 
 #endif // ndef BUILD_TWRPTAR_MAIN
