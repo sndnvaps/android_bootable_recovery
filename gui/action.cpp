@@ -405,18 +405,19 @@ int GUIAction::doAction(Action action, int isThreaded /* = 0 */)
 
 	if (function == "active_system") {
 		operation_start("active_system");
-        TDBFunc *tdb = new TDBFunc();
         if (arg == "system0") {
             DataManager::SetValue("tw_active_system", "system0");
             gui_print("active system change to system0\n");
-            tdb->SetBootmode("boot-system0");
-            tdb->dualboot_init();
+            TDBManager.SetBootmode("boot-system0");
+            TDBManager.dualboot_restore_node();
+            TDBManager.dualboot_init();
             sync();
         } else if (arg == "system1") {
             DataManager::SetValue("tw_active_system","system1");
             gui_print("active system change to system1\n");
-            tdb->SetBootmode("boot-system1");
-            tdb->dualboot_init();
+            TDBManager.SetBootmode("boot-system1");
+            TDBManager.dualboot_restore_node();
+            TDBManager.dualboot_init();
             sync();
 
         }
@@ -425,9 +426,9 @@ int GUIAction::doAction(Action action, int isThreaded /* = 0 */)
 	}
 
     if (function == "enable_tdb") {
+        bool stat;
         operation_start("Setup TrueDualboot ...");
-        TDBFunc *tdb = new TDBFunc();
-        bool stat = tdb->SetUpTDB();
+        stat = TDBManager.SetUpTDB();
         int ret = 0;
         if (!stat) {
             ret = 1;
@@ -443,9 +444,9 @@ int GUIAction::doAction(Action action, int isThreaded /* = 0 */)
     }
 
     if (function == "disable_tdb") {
+        bool stat;
         operation_start("Disable TrueDualBoot ...");
-        TDBFunc *tdb = new TDBFunc();
-        bool stat = tdb->DisableTDB();
+        stat = TDBManager.DisableTDB();
         int ret = 0;
         if (!stat) {
             ret = 1;

@@ -31,7 +31,7 @@ std::string LanguageManager::parse(std::string id)
 	{
 		std::string lang_name;
 		DataManager::GetValue("tw_lang_name", lang_name);
-
+		//LOGINFO("tw_lang_name = %s \n",lang_name.c_str());
 		if (lang_name == root_node->first_attribute("Language")->value())
 		{
 			for(xml_node<> * string_node = root_node->first_node("string"); string_node; string_node = string_node->next_sibling())

@@ -1705,6 +1705,7 @@ bool TWPartition::Backup_Tar(string backup_folder) {
         ///string new_backup_path = Backup_Path + "/" + current_system;
         string active_system;
         DataManager::GetValue("tw_active_system",active_system);
+        PartitionManager.Mount_By_Path("/data",true);
         string new_backup_path = Backup_Path + "/" + active_system;
         tar.setdir(new_backup_path);
     } else {
@@ -1784,6 +1785,7 @@ bool TWPartition::Restore_Tar(string restore_folder, string Restore_File_System)
             full_path = Mount_Point + "/" + current_system;
             gui_print("Wiping %s...\n",full_path.c_str());
             LOGINFO("removedire %s, before restore it",full_path.c_str());
+            PartitionManager.Mount_By_Path("/data",true);
             TWFunc::removeDir(full_path,false);
             mkdir(full_path.c_str(),0755);// reconstruct it
         } else {

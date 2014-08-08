@@ -989,12 +989,12 @@ void DataManager::SetDefaultValues()
     mValues.insert(make_pair("tw_lang_name_en",make_pair("0",0)));
     mValues.insert(make_pair("tw_lang_name_zh-CN",make_pair("0",0)));
     string active_system;
-    active_system = TDBFunc::GetCurrentSystem();
+    active_system = TDBManager.GetCurrentSystem();
     if (!active_system.empty()) {
     mValues.insert(make_pair("tw_active_system", make_pair(active_system,1)));
     }
     string tdb_s;
-    if (TDBFunc::GetTDBState()) {
+    if (TDBManager.GetTDBState()) {
         tdb_s = "on";
     } else {
         tdb_s = "off";
@@ -1039,11 +1039,11 @@ int DataManager::GetMagicValue(const string varName, string& value)
 		return 0;
     } else if (varName == "tw_current_system") {
         string current_system;
-        current_system = TDBFunc::GetCurrentSystem();
+        current_system = TDBManager.GetCurrentSystem();
         value = current_system;
     } else if (varName == "tw_tdb_state") {
         string tdb_st;
-        if (TDBFunc::GetTDBState()){
+        if (TDBManager.GetTDBState()){
             tdb_st = "on";
         } else {
             tdb_st = "off";
