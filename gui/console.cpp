@@ -175,7 +175,7 @@ int GUIConsole::RenderConsole(void)
 	gr_color(mForegroundColor.red, mForegroundColor.green, mForegroundColor.blue, mForegroundColor.alpha);
 
 	// Don't try to continue to render without data
-	int prevCount = mLastCount;
+    unsigned int prevCount = mLastCount;
 	mLastCount = gConsole.size();
 	mRender = false;
 	if (mLastCount == 0)
@@ -184,12 +184,12 @@ int GUIConsole::RenderConsole(void)
 	// Due to word wrap, figure out what / how the newly added text needs to be added to the render vector that is word wrapped
 	// Note, that multiple consoles on different GUI pages may be different widths or use different fonts, so the word wrapping
 	// may different in different console windows
-	for (int i = prevCount; i < mLastCount; i++) {
+    for (unsigned i = prevCount; i < mLastCount; i++) {
 		string curr_line = gConsole[i];
 		int line_char_width;
 		for(;;) {
 			line_char_width = gr_maxExW(curr_line.c_str(), fontResource, mConsoleW);
-			if (line_char_width < curr_line.size()) {
+            if (line_char_width < (int)curr_line.size()) {
 				rConsole.push_back(curr_line.substr(0, line_char_width));
 				curr_line = curr_line.substr(line_char_width);
 			} else {
@@ -322,7 +322,7 @@ int GUIConsole::NotifyTouch(TOUCH_STATE state, int x, int y)
 	if (mSlideout && mSlideoutState == hidden)
 	{
 		if (state == TOUCH_START)
-		{
+        {
 			mSlideoutState = request_show;
 			return 1;
 		}
@@ -351,17 +351,17 @@ int GUIConsole::NotifyTouch(TOUCH_STATE state, int x, int y)
 	case TOUCH_DRAG:
 		if (x < mConsoleX || x > mConsoleX + mConsoleW || y < mConsoleY || y > mConsoleY + mConsoleH)
 			break; // touch is outside of the console area -- do nothing
-		if (y > mLastTouchY + mFontHeight) {
-			while (y > mLastTouchY + mFontHeight) {
+        if (y > mLastTouchY + (int)mFontHeight) {
+            while (y > mLastTouchY + (int)mFontHeight) {
 				if (mCurrentLine == -1)
 					mCurrentLine = RenderCount - 1;
-				else if (mCurrentLine > mMaxRows)
+                else if (mCurrentLine > (int)mMaxRows)
 					mCurrentLine--;
 				mLastTouchY += mFontHeight;
 			}
 			mRender = true;
-		} else if (y < mLastTouchY - mFontHeight) {
-			while (y < mLastTouchY - mFontHeight) {
+        } else if (y < mLastTouchY - (int)mFontHeight) {
+            while (y < mLastTouchY - (int)mFontHeight) {
 				if (mCurrentLine >= 0)
 					mCurrentLine++;
 				mLastTouchY -= mFontHeight;

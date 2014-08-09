@@ -287,6 +287,9 @@ ifneq ($(wildcard bionic/libc/include/sys/capability.h),)
     LOCAL_CFLAGS += -DHAVE_CAPABILITIES
 endif
 
+#Build c++11 support 
+LOCAL_CFLAGS += -std=gnu++11
+
 
 LOCAL_MODULE := recovery
 

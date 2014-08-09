@@ -1,10 +1,24 @@
 /*
- *
- *
- *
- */
+    Copyright 2014 (C) sndnvaps<sndnvaps@yahoo.com>
 
+    This file is create by sndnvaps.
+    Support TrueDualBoot feature in XiaoMi Devices.
 
+    Devices:: XiaoMi Mi2S
+
+    This is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with it.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #include <string>
 #include <vector>
@@ -26,8 +40,6 @@
 using namespace std;
 
 map<std::string,struct stat>     TDBFunc::partst;//初始化变量
-map<std::string, node_backup>    TDBFunc::Node_Part;//用于保存数据 <string,<<string,struct stat>,<string,struct stat>>>
-
 
 TDBFunc::TDBFunc() {
     //do nothing
@@ -37,27 +49,12 @@ TDBFunc::~TDBFunc() {
     //do nothing
 }
 
-/*
- /dev/block/mmcblk0p18     /boot
- /dev/block/mmcblk0p19     /boot1
- /dev/block/mmcblk0p1    /modem
- /dev/block/mmcblk0p2    /modem1
- /dev/block/mmcblk0p23    /system
- /dev/block/mmcblk0p24    /system1
-*/
-/*
- int main() {
-void dualboot_prepare_env(void);
-void dualboot_setup_env(void);
- */
-
 
 bool TDBFunc::TDB_before_update(){
     //HACK:: delete node to userdata partition so update_script
     //will not be able to mount it (the wrong way)
     //we'll mount it now so files won't land on ramdisk
-#define PATH_USERDATA_NODE "/dev/block/mmcblk0p26"
-#define PATH_USERDATA_BACKUP "/dev/part_backup_data"
+
 
     if(!GetTDBState()){
         unlink(PATH_USERDATA_NODE);
@@ -234,6 +231,15 @@ int TDBFunc::SetBootmode(string bootmode) {
 bool TDBFunc::dualboot_restore_node(void) {
   /*
    * boot,boot1,modem,modem1,system,system1
+   * This func just for XiaoMi MI2S
+   * Need to modify
+   *     struct rpart_list {
+   *      ...
+   *      } rpl[6] {
+   *        .......
+   *      };
+   *      change the third param;
+   *
    */
   struct stat r_st;
   struct rpart_list {
@@ -268,6 +274,7 @@ bool TDBFunc::dualboot_restore_node(void) {
           unlink(rpl[i].backup_node.c_str());//unlink the backup_node for next dualboot_init();
         } else {
           LOGERR("backup_node '%s' not exists \n",rpl[i].backup_node.c_str());
+          LOGINFO("First init /dev/part_backup_$NAME\n");
           return false;
         }
    }
@@ -305,29 +312,13 @@ void TDBFunc::dualboot_init_part(std::string part) {
     //part_backup == "/dev/part_backup_system";
     std::string part_name;
     std::string part_backup;
-    std::string origin_part;
     struct stat st;
-
-    //// \/dev/block/platform/msm_sdcc.1/by-name/misc
-    ///
-    ///
-    ssize_t len;
-    char resolved_path[PATH_MAX];
     part_name = part.substr(1,std::string::npos);//part_name == "system"
     TWPartition* partition;
     partition = PartitionManager.Find_Partition_By_Path(part);
     std::string block;
     block = partition->Actual_Block_Device;
     part_backup = "/dev/part_backup_" + part_name;
-    origin_part = "/dev/block/platform/msm_sdcc.1/by-name/" + part_name;
-
-    if ((len = readlink(origin_part.c_str(),resolved_path,sizeof(resolved_path)-1)) != -1) {
-        resolved_path[len] = '\0';
-
-      }
-
-    //stat(block.c_str(),&st);
-    //st = partition->GetStat();
 
     // check if moved node already exist
     if(stat(part_backup.c_str(), &st) == 0) {
@@ -355,10 +346,11 @@ void TDBFunc::dualboot_prepare_env(void) {
 
 void TDBFunc::dualboot_partinit() {
 
-  //TWPartition* part;//  PartitionManager.Find_Partition_By_Path("/boot");
-  //std::vector<string> partlist;
   LOGINFO("dualboot init partitions\n");
   std::map<string,string> partlist;
+  //// \if you want to make it support another device(default is XiaoMi MI2S)
+  ///  \ Must change the partition info below , define the  Actual_Block_Device
+  ///
   partlist.insert(make_pair("/boot","/dev/block/mmcblk0p18"));
   partlist.insert(make_pair("/boot1","/dev/block/mmcblk0p19"));
   partlist.insert(make_pair("/modem","/dev/block/mmcblk0p1"));
@@ -366,9 +358,7 @@ void TDBFunc::dualboot_partinit() {
   partlist.insert(make_pair("/system","/dev/block/mmcblk0p23"));
   partlist.insert(make_pair("/system1","/dev/block/mmcblk0p24"));
 
-  //std::vector<string>::iterator it;
   std::map<string,string>::iterator it;
-  //map<std::string,struct stat> partst;
   for (it = partlist.begin(); it != partlist.end(); it++) {
        struct stat st;
        stat(it->second.c_str(),&st);
@@ -387,7 +377,7 @@ void TDBFunc::dualboot_setup_env(void) {
 
     std::string system;
     //DataManager::GetValue()
-    system = TDBFunc::GetCurrentSystem();
+    system = GetCurrentSystem();
     map<string, struct stat>::iterator system0;
     map<string, struct stat>::iterator system1;
     map<string, struct stat>::iterator boot0;

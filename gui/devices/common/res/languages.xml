@@ -94,14 +94,41 @@
 	<string id="text_dis_tdb">tw_text1=Disable truedualboot?</string>
 	<string id="text_dis_tdb2">tw_action_text1=Disable truedualboot ...</string>
 	<string id="text_dis_tdb_off">tw_complete_text1=Truedualboot off</string>
-
+        <string id="text_wipeselparts">tw_text1=Wipe Selected Partition(s)?</string>
+        <string id="text_wiping_parts">tw_action_text1=Wiping Partition(s)...</string>
+        <string id="text_wipe_complete">tw_complete_text1=Wipe Complete</string>
+        <string id="text_copyinglog2sd">tw_action_text1=Copying Log to SD Card...</string>
+        <string id="text_copylogcomplete">tw_complete_text1=Log Copy Complete</string>
 	<string id="set_lang_en">Set lang to En</string>
 	<string id="set_lang_zh">Set lang to zh-CN</string>
 	<string id="true_tdb">TrueDualBoot</string>
 	<string id="main_active_system">active system 0/1</string>
-	<string id="current_system">Current System : %tw_current_system%</string>
+        <string id="current_system">Current System: %tw_active_system%</string>
 	<string id="ac_system0">active system0.</string>
 	<string id="ac_system1">active system1.</string>
+        <string id="screen">Brightness & Timeout</string>
+        <string id="screen_set">Screen Settings</string>
+        <string id="e_screen_timeout">Enable screen timeout.</string>
+        <string id="screen_timout_sec">Screen timeout in seconds:</string>
+        <string id="brightness">Brightness: %tw_brightness_pct%%</string>
+        <string id="u_military_time">Use Military Time.</string>
+        <string id="vibra_menu">Vibration Duration</string>
+        <string id="vibrat_set">Vibration Settings :</string>
+        <string id="button_vibrat">Button Vibration:</string>
+        <string id="keyboard_vibrat">Keyboard Vibration:</string>
+        <string id="action_vibrat">Action Vibration:</string>
+        <string id="wipe_all">Wipes Data, Cache, and Dalvik</string>
+        <string id="most_of_time">Most of the time this is</string>
+        <strind id="only_wipe">the only wipe that you need.</string>
+        <string id="s_f_reset">Swipe to Factory Reset</string>
+        <string id="advanced_wipe">Advanced Wipe</string>
+        <string id="selwipepart">Select Partitions to Wipe:</string>
+        <string id="swipe2wipe">Swipe to Wipe</string>
+        <string id="selpart2backup">Select Partitions to Back Up:</string>
+        <string id="selpart2mount">Select Partitions to Mount:</string>
+        <string id="no_encrypt">No Encryption</string>
+        <string id="using_encrypt">Using Encryption</string>
+        <string id="selpackage2restore">Select Package to Restore:</string>
 	<string id="utc-11">(UTC -11) Samoa, Midway Island</string>
 	<string id="utc-10">(UTC -10) Hawaii</string>
 	<string id="utc-9">(UTC -9) Alaska</string>
@@ -228,7 +255,7 @@
 	<string id="decrypt_enter_password">Please Enter Your Password</string>
 	<string id="reboot_poweroff">Power Off</string>
 	<string id="back2cancel">Press back button to cancel.</string>
-	<string id="back2cancel">Press back to cancel adding this zip.</string>
+        <string id="back2cancel_zip">Press back to cancel adding this zip.</string>
 	<string id="advanced_reinject_twrp">Re-Inject TWRP</string>
 	<string id="reboot">Reboot</string>
 	<string id="reboot_menu">Reboot Menu</string>
@@ -277,7 +304,7 @@
 	<string id="swipe2restore">Swipe to Restore</string>
 	<string id="swipe2sideload">Swipe to Start Sideload</string>
 	<string id="lock_swipe">Swipe to Unlock</string>
-	<string id="restore_system">System</string>
+        <string id="reboot_menu_system">System</string>
 	<string id="backup_system">System (%tw_backup_system_size% MB)</string>
 	<string id="head">Team Win Recovery Project  v%tw_version%</string>
 	<string id="head_long">Team Win Recovery Project (twrp)  v%tw_version%</string>
@@ -416,13 +443,43 @@
 	<string id="text_dis_tdb2">tw_action_text1=正在处理中 ...</string>
 	<string id="text_dis_tdb_off">tw_complete_text1=成功关闭双系统支持</string>
 	<string id="text_set_active">tw_action_text1=激活系统0/1</string>
+        <string id="text_wipeselparts">tw_text1=是否清空所选分区？</string>
+        <string id="text_wiping_parts">tw_action_text1=正在格式化分区。。</string>
+        <string id="text_wipe_complete">tw_complete_text1=格式化完成</string>
+        <string id="text_copyinglog2sd">tw_action_text1=正在往sdcard复制日志...</string>
+        <string id="text_copylogcomplete">tw_complete_text1=复制日志完成</string>
+
 	<string id="main_active_system">激活系统0/1</string>
 	<string id="true_tdb">双系统设置</string>
 	<string id="ac_system0">选择系统0</string>
 	<string id="ac_system1">选择系统1</string>
-	<string id="current_system">当前系统 : %tw_current_system%</string>
+        <string id="screen">屏幕设置</string>
+        <string id="screen_set">屏幕设置</string>
+        <string id="e_screen_timeout">允许关闭屏幕</string>
+        <string id="screen_timout_sec">多少秒关闭屏幕</string>
+        <string id="u_military_time">使用军方时间</string>
+        <string id="vibra_menu">振动频率设置</string>
+        <string id="vibrat_set">振动频率设置</string>
+        <string id="button_vibrat">按键:</string>
+        <string id="keyboard_vibrat">键盘:</string>
+        <string id="action_vibrat">操作:</string>
+        <string id="brightness">亮度: %tw_brightness_pct%%</string>
+        <string id="current_system">当前系统: %tw_active_system%</string>
 	<string id="set_lang_zh">设置语言为中文</string>
 	<string id="set_lang_en">设置语言为英文</string>
+        <string id="wipe_all">清空 Data,Cache,Dalvik分区</string>
+        <string id="most_of_time">大多数时候</string>
+        <strind id="only_wipe">这就是你需要的操作.</string>
+        <string id="s_f_reset">滑动恢复出厂设置</string>
+        <string id="advanced_wipe">高级操作</string>
+        <string id="selwipepart">选择要清空的分区</string>
+        <string id="swipe2wipe">滑动按钮清空</string>
+        <string id="selpart2backup">选择要备份的分区</string>
+        <string id="selpart2mount">选择要挂载的分区</string>
+        <string id="no_encrypt">没有开启加密</string>
+        <string id="using_encrypt">已经启用加密</string>
+        <string id="selpackage2restore">选择恢复用的镜像:</string>
+
 	<string id="utc-11">(UTC -11) 美属萨摩亚, 中途岛</string>
 	<string id="utc-10">(UTC -10) 夏威夷</string>
 	<string id="utc-9">(UTC -9) 阿拉斯加</string>
@@ -548,8 +605,8 @@
 	<string id="filemanagerchmod_enter_permissions">请输入新的权限</string>
 	<string id="decrypt_enter_password">请输入密码</string>
 	<string id="reboot_poweroff">关机</string>
-	<string id="back2cancel">按返回键取消添加这个zip包.</string>
-	<string id="back2cancel">按返回键取消.</string>
+        <string id="back2cancel_zip">按返回键取消添加这个zip包.</string>
+        <string id="back2cancel">按返回键取消.</string>
 	<string id="advanced_reinject_twrp">重新注入TWRP</string>
 	<string id="reboot">重启</string>
 	<string id="reboot_menu">重启菜单</string>
@@ -598,7 +655,7 @@
 	<string id="swipe2restore">滑动按钮开始还原</string>
 	<string id="swipe2sideload">滑动按钮开始Sideload</string>
 	<string id="lock_swipe">滑动按钮解锁</string>
-	<string id="restore_system">System/系统</string>
+        <string id="reboot_menu_system">重启系统</string>
 	<string id="backup_system">System/系统 (%tw_backup_system_size% MB)</string>
 	<string id="head">中文TWRP  版本%tw_version%</string>
 	<string id="head_long">中文TWRP  版本%tw_version%</string>

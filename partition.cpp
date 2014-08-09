@@ -283,6 +283,12 @@ bool TWPartition::Process_Fstab_Line(string Line, bool Display_Error) {
             Storage_Name = Display_Name;
             Wipe_Available_in_GUI = false;
             Can_Be_Backed_Up = false;
+        } else if (Mount_Point == "/data_root") {
+            Display_Name = "Data_root";
+            Backup_Display_Name = Display_Name;
+            Storage_Name = Display_Name;
+            Wipe_Available_in_GUI = true;
+            Can_Be_Backed_Up = true;
 		} else if (Mount_Point == "/data") {
 			Display_Name = "Data";
 			Backup_Display_Name = Display_Name;

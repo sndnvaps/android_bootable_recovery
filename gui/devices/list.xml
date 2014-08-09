@@ -207,7 +207,7 @@
 <text id="decrypt_enter_password">Please Enter Your Password</text>
 <text id="reboot_poweroff">Power Off</text>
 <text id="back2cancel">Press back button to cancel.</text>
-<text id="back2cancel">Press back to cancel adding this zip.</text>
+<text id="back2cancel_zip">Press back to cancel adding this zip.</text>
 <text id="advanced_reinject_twrp">Re-Inject TWRP</text>
 <text id="reboot">Reboot</text>
 <text id="reboot_menu">Reboot Menu</text>
@@ -256,7 +256,7 @@
 <text id="swipe2restore">Swipe to Restore</text>
 <text id="swipe2sideload">Swipe to Start Sideload</text>
 <text id="lock_swipe">Swipe to Unlock</text>
-<text id="restore_system">System</text>
+<text id="reboot_menu_system">System</text>
 <text id="backup_system">System (%tw_backup_system_size% MB)</text>
 <text id="head">Team Win Recovery Project  v%tw_version%</text>
 <text id="head_long">Team Win Recovery Project (twrp)  v%tw_version%</text>
@@ -302,11 +302,39 @@
 <text id="main_active_system">active system 0/1</text>
 <text id="ac_system0">active system0.</text>
 <text id="ac_system1">active system1.</text>
-<text id="current_system">Current system : %tw_current_system%</text>
+<text id="current_system">Current System: %tw_active_system%</text>
 <text id="tdb_functions">tdb_func</text>
 <text id="tdb_st">tdb state : %tw_tdb_state%</text>
 <text id="e_tdb">Enable TDB</text>
 <text id="d_tdb">Disable TDB</text>
+<text id="screen">Screen</text>
+<text id="screen_set">Screen Settings</text>
+<text id="e_screen_timeout">Enable screen timeout.</text>
+<text id="screen_timout_sec">Screen timeout in seconds:</text>
+<text id="brightness">Brightness: %tw_brightness_pct%%</text>
+<text id="u_military_time">Use Military Time.</text>
+<text id="vibra_menu">Vibration Duration</text>
+<text id="vibrat_set">Vibration Settings :</text>
+<text id="button_vibrat">Button Vibration:</text>
+<text id="keyboard_vibrat">Keyboard Vibration:</text>
+<text id="action_vibrat">Action Vibration:</text>
+<text id="wipe_all">Wipes Data, Cache, and Dalvik</text>
+<text id="most_of_time">Most of the time this is</text>
+<text id="only_wipe">the only wipe that you need.</text>
+<text id="s_f_reset">Swipe to Factory Reset</text>
+<text id="advanced_wipe">Advanced Wipe</text>
+<text id="selwipepart">Select Partitions to Wipe:</text>
+<text id="swipe2wipe">Swipe to Wipe</text>
+<text id="selpart2backup">Select Partitions to Back Up:</text>
+<text id="selpart2mount">Select Partitions to Mount:</text>
+<text id="no_encrypt">No Encryption</text>
+<text id="using_encrypt">Using Encryption</text>
+<text id="selpackage2restore">Select Package to Restore:</text>
+<action id="text_copyinglog2sd" function="set">tw_action_text1=Copying Log to SD Card...</action>
+<action id="text_copylogcomplete" function="set">tw_complete_text1=Log Copy Complete</action>
+<action id="text_wipeselparts" function="set">tw_text1=Wipe Selected Partition(s)?</action>
+<action id="text_wiping_parts" function="set">tw_action_text1=Wiping Partition(s)...</action>
+<action id="text_wipe_complete" function="set">tw_complete_text1=Wipe Complete</action>
 <action id="text_en_tdb" function="set">tw_text1=Enable truedualboot?</action>
 <action id="text_en_tdb2" function="set">tw_action_text1=Enable truedualboot...</action>
 <action id="text_en_tdb_on" function="set">tw_complete_text1=Truedualboot on</action>
