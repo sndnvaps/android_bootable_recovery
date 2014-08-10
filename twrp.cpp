@@ -101,6 +101,10 @@ int main(int argc, char **argv) {
 		return -1;
 	}
 	PartitionManager.Output_Partition_Logging();
+
+    //Start Adbd
+    TWFunc::Start_adbd();
+
 	// Load up all the resources
 	gui_loadResources();
 

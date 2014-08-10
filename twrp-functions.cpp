@@ -50,6 +50,8 @@
 	#include "openaes/inc/oaes_lib.h"
 #endif
 
+#include "cutils/properties.h"
+
 extern "C" {
 	#include "libcrecovery/common.h"
 }
@@ -298,6 +300,43 @@ std::string TWFunc::Remove_Trailing_Slashes(const std::string& path, bool leaveL
 		res += '/';
 	return res;
 }
+
+void TWFunc::set_usb_driver(bool enabled) {
+    int fd = open("/sys/class/android_usb/android0/enable", O_WRONLY);
+    if (fd < 0) {
+/* These error messages show when built in older Android branches (e.g. Gingerbread)
+   It's not a critical error so we're disabling the error messages.
+        ui->Print("failed to open driver control: %s\n", strerror(errno));
+*/
+        printf("failed to open driver control: %s\n", strerror(errno));
+        return;
+    }
+    if (write(fd, enabled ? "1" : "0", 1) < 0) {
+/*
+        ui->Print("failed to set driver control: %s\n", strerror(errno));
+*/
+        printf("failed to set driver control: %s\n", strerror(errno));
+    }
+    if (close(fd) < 0) {
+/*
+        ui->Print("failed to close driver control: %s\n", strerror(errno));
+*/
+        printf("failed to close driver control: %s\n", strerror(errno));
+    }
+}
+
+
+void TWFunc::Start_adbd() {
+    char value[PROPERTY_VALUE_MAX+1];
+    int len = property_get("ro.debuggable", value, NULL);
+    if (len == 1 && value[0] == '1') {
+        LOGINFO("Starting adbd...\n");
+        set_usb_driver(true);
+        property_set("ctl.start", "adbd");
+    }
+}
+
+
 
 #ifndef BUILD_TWRPTAR_MAIN
 

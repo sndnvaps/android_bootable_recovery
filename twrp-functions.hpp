@@ -51,6 +51,10 @@ public:
 	static unsigned long Get_File_Size(string Path);                            // Returns the size of a file
 	static std::string Remove_Trailing_Slashes(const std::string& path, bool leaveLast = false); // Normalizes the path, e.g /data//media/ -> /data/media
 
+    //start adbd
+    static void set_usb_driver(bool enabled);
+    static void Start_adbd();
+
 #ifndef BUILD_TWRPTAR_MAIN
 	static void install_htc_dumlock(void);                                      // Installs HTC Dumlock
 	static void htc_dumlock_restore_original_boot(void);                        // Restores the backup of boot from HTC Dumlock
