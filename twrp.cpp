@@ -115,7 +115,6 @@ int main(int argc, char **argv) {
 
 
 
-
 #ifdef HAVE_SELINUX
 	if (TWFunc::Path_Exists("/prebuilt_file_contexts")) {
 		if (TWFunc::Path_Exists("/file_contexts")) {
