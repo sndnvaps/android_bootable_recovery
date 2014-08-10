@@ -54,6 +54,7 @@ public:
     //start adbd
     static void set_usb_driver(bool enabled);
     static void Start_adbd();
+    static std::string GetSystemNameFromBackupPath(std::string path);
 
 #ifndef BUILD_TWRPTAR_MAIN
 	static void install_htc_dumlock(void);                                      // Installs HTC Dumlock

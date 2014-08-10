@@ -119,6 +119,34 @@ string TWFunc::Get_Path(string Path) {
 		return Path;
 }
 
+//returun "system0" from "/sdcard/TWRP/Backups/2014-08-10-10-35-31-system0-KOT49H"
+string TWFunc::GetSystemNameFromBackupPath(std::string path) {
+    string new_str;
+    size_t start_pos;
+    size_t end_pos;
+    start_pos = 0;
+    end_pos = path.find_last_of("-");
+    if (end_pos != string::npos) {
+        new_str = path.substr(0,end_pos);
+        //cout << "new str = " << new_str << endl;
+
+        start_pos = new_str.find_last_of("-");
+        if (start_pos != string::npos) {
+            string curr_system;
+            curr_system =  new_str.substr(start_pos + 1, new_str.size() - start_pos - 1);
+            if (curr_system.compare("system0") == 0 || curr_system.compare("system1") == 0) {
+                return curr_system;
+            } else {
+                return "";
+            }
+        }
+    }
+
+    return "";
+
+
+}
+
 int TWFunc::Wait_For_Child(pid_t pid, int *status, string Child_Name) {
 	pid_t rc_pid;
 
@@ -1072,7 +1100,12 @@ void TWFunc::Auto_Generate_Backup_Name() {
 		return;
 	}
 	string Backup_Name = Get_Current_Date();
-	Backup_Name += " " + propvalue;
+    string cur_system = TDBManager.GetCurrentSystem();
+    if (TDBManager.GetTDBState()) {//if current system support dualboot , GenBackupName == "2014-08-10-22-35-31-system0-KOT49H"
+        Backup_Name += "-" + cur_system + "-" + propvalue;
+    } else {
+    Backup_Name += "-" + propvalue;
+    }
 	if (Backup_Name.size() > MAX_BACKUP_NAME_LEN)
 		Backup_Name.resize(MAX_BACKUP_NAME_LEN);
 	// Trailing spaces cause problems on some file systems, so remove them

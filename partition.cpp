@@ -1787,13 +1787,15 @@ bool TWPartition::Restore_Tar(string restore_folder, string Restore_File_System)
 	} else {
 
         if (TDBManager.GetTDBState() && Mount_Point == "/data") {
-            string current_system = TDBManager.GetCurrentSystem();
+            string current_system = TWFunc::GetSystemNameFromBackupPath(restore_folder);
+            if (!current_system.empty()) {
             full_path = Mount_Point + "/" + current_system;
             gui_print("Wiping %s...\n",full_path.c_str());
-            LOGINFO("removedire %s, before restore it",full_path.c_str());
+            LOGINFO("remove dir %s, before restore it",full_path.c_str());
             PartitionManager.Mount_By_Path("/data",true);
             TWFunc::removeDir(full_path,false);
-            mkdir(full_path.c_str(),0755);// reconstruct it
+            }
+
         } else {
 		gui_print("Wiping %s...\n", Display_Name.c_str());
 		if (!Wipe(Restore_File_System))
@@ -1808,11 +1810,14 @@ bool TWPartition::Restore_Tar(string restore_folder, string Restore_File_System)
 
 	Full_FileName = restore_folder + "/" + Backup_FileName;
 	twrpTar tar;
+    /*
     if (full_path != "") {
         tar.setdir(full_path);
     } else {
 	tar.setdir(Backup_Path);
     }
+    */
+    tar.setdir(Backup_Path);
 	tar.setfn(Full_FileName);
 	tar.backup_name = Backup_Name;
 #ifndef TW_EXCLUDE_ENCRYPTED_BACKUPS
