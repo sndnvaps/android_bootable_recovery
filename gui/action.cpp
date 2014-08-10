@@ -483,24 +483,10 @@ int GUIAction::doAction(Action action, int isThreaded /* = 0 */)
 		int check = 0, ret_val = 0;
 		std::string theme_path;
 
-        int lang_en;
-        int lang_zh;
-        string lang_name;
-        DataManager::GetValue("tw_lang_name_en",lang_en);
-        DataManager::GetValue("tw_lang_name_zh-CN",lang_zh);
-        DataManager::GetValue("tw_lang_name",lang_name);
+             string SelectedLang;
+            DataManager::GetValue("tw_lang_guisel",SelectedLang);//Read the selected lang name to SelectedLang
 
-        if (lang_en == 1  && lang_name == "en")
-            return 0;
-        if (lang_zh == 1 && lang_name == "zh-CN")
-            return 0;
-
-        if (lang_en == 1 && lang_zh == 0)
-            DataManager::SetValue("tw_lang_name","en");
-
-        if (lang_zh == 1 && lang_en == 0)
-            DataManager::SetValue("tw_lang_name","zh-CN");
-
+            DataManager::SetValue("tw_lang_name",SelectedLang);
 
 		operation_start("Reload Theme");
 

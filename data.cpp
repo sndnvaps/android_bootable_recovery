@@ -986,8 +986,7 @@ void DataManager::SetDefaultValues()
     //en || zh-CN
     mValues.insert(make_pair("tw_lang_name", make_pair("zh-CN", 1)));
     mValues.insert(make_pair("tw_lang_guisel",make_pair("zh-CN",1)));//for listbox
-    mValues.insert(make_pair("tw_lang_name_en",make_pair("0",0)));
-    mValues.insert(make_pair("tw_lang_name_zh-CN",make_pair("0",0)));
+
     string active_system;
     active_system = TDBManager.GetCurrentSystem();
     if (!active_system.empty()) {
