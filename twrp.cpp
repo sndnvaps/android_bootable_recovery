@@ -106,6 +106,9 @@ int main(int argc, char **argv) {
 	// Load default values to set DataManager constants and handle ifdefs
 	DataManager::SetDefaultValues();
 	TDBFunc::dualboot_partinit();
+    //Start Adbd
+    TWFunc::Start_adbd();
+
 
 	// Load up all the resources
 	gui_loadResources();
