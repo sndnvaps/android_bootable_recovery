@@ -2821,7 +2821,7 @@
 				<font resource="font" color="%button_text_color%" />
 				<text>TualDualboot</text>
 				<image resource="main_button" />
-				<action function="page">tualdualboot</action>
+                                <action function="page">truedualboot</action>
 			</object>
                         
 
@@ -2840,16 +2840,15 @@
 
                 
 	
-		<page name="tualdualboot">
+                <page name="truedualboot">
 			<object type="template" name="header" />
 
 			<object type="text" color="%text_color%">
 				<font resource="font" />
 				<placement x="%center_x%" y="%row1_header_y%" placement="5" />
-				<text>TualDualboot</text>
+                                <text>TrueDualboot</text>
 			</object>
 
-			
 			<object type="button">
 				<highlight color="%highlight_color%" />
 				<placement x="%col1_x%" y="%row1_y%" />
@@ -2858,18 +2857,16 @@
 				<image resource="main_button" />
 				<action function="page">SetActiveSystem</action>
 			</object>
-		       
 
-			<!-- set tualdualboot functions 
 			<object type="button">
 				<highlight color="%highlight_color%" />
 				<placement x="%col2_x%" y="%row1_y%" />
 				<font resource="font" color="%button_text_color%" />
-				<text>Enable/Disable TualDualboot</text>
+                                <text>Select lang</text>
 				<image resource="main_button" />
-				<action function="page">SetTDB</action>
+                                <action function="page">listboxtest</action>
 			</object>
-                           -->
+
 
 			<object type="action">
 				<touch key="home" />
@@ -2883,7 +2880,61 @@
 
 			<object type="template" name="footer" />
 		</page>
-	
+
+		<!-- list box test -->
+
+		<page name="listboxtest">
+                         <object type="template" name="header" />
+
+			<object type="listbox">
+				<highlight color="%fileselector_highlight_color%" />
+                                <placement x="%listbox_x%" y="%row1_header_y%" w="%listbox_width%" h="130" />
+				<header background="%fileselector_header_background%" textcolor="%fileselector_header_textcolor%" separatorcolor="%fileselector_header_separatorcolor%" separatorheight="%fileselector_header_separatorheight%" />
+				<fastscroll linecolor="%fastscroll_linecolor%" rectcolor="%fastscroll_rectcolor%" w="%fastscroll_w%" linew="%fastscroll_linew%" rectw="%fastscroll_rectw%" recth="%fastscroll_recth%" />
+				<text>Select Language:</text>
+				<icon selected="radio_true" unselected="radio_false" />
+				<separator color="%fileselector_separatorcolor%" height="%fileselector_separatorheight%" />
+				<background color="%listbox_background%" />
+				<font resource="font" spacing="%listbox_spacing%" color="%text_color%" highlightcolor="%fileselector_highlight_font_color%" />
+
+				<data name="tw_lang_guisel" />
+
+				<listitem name="English">en</listitem>
+				<listitem name="Chinese">zh_CN</listitem>
+
+			</object>
+
+			<object type="button">
+				<highlight color="%highlight_color%" />
+				<placement x="%col_center_x%" y="%tz_set_y%" />
+				<font resource="font" color="%button_text_color%" />
+				<text>Set Language</text>
+				<image resource="main_button" />
+				<action function="setguilang"></action>
+			</object>
+
+			<object type="text" color="%text_color%">
+				<font resource="font" />
+				<placement x="%center_x%" y="%tz_current_y%" placement="5" />
+				<text>Current Language: %tw_lang_name%</text>
+			</object>
+
+			<object type="action">
+				<touch key="home" />
+				<action function="page">main</action>
+			</object>
+
+			<object type="action">
+				<touch key="back" />
+                                <action function="page">truedualboot</action>
+			</object>
+
+			<object type="template" name="footer" />
+		</page>
+
+
+			
+
 		<page name="SetActiveSystem">
 			<object type="template" name="header" />
 
@@ -2976,7 +3027,7 @@
 
 			<object type="action">
 				<touch key="back" />
-				<action function="page">tualdualboot</action>
+                                <action function="page">truedualboot</action>
 			</object>
 
 			<object type="template" name="footer" />

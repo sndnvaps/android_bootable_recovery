@@ -617,6 +617,14 @@ int GUIAction::doAction(Action action, int isThreaded /* = 0 */)
 		LOGERR("Unable to perform compute '%s'\n", arg.c_str());
 		return -1;
 	}
+
+    if (function == "setguilang") {
+        string SelectedLang;
+        DataManager::GetValue("tw_lang_guisel",SelectedLang);//Read the selected lang name to SelectedLang
+
+        DataManager::SetValue("tw_lang_name",SelectedLang);
+
+    }
 	
 	if (function == "setguitimezone")
 	{

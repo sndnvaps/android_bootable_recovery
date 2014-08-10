@@ -984,6 +984,10 @@ void DataManager::SetDefaultValues()
 	LOGINFO("TW_EXCLUDE_ENCRYPTED_BACKUPS := true\n");
 	mValues.insert(make_pair("tw_include_encrypted_backup", make_pair("0", 0)));
 #endif
+
+    //tw_lang_name == en || zh_CN
+    mValues.insert(make_pair("tw_lang_name",make_pair("en",1)));
+    mValues.insert(make_pair("tw_lang_guisel",make_pair("en",1)));
 }
 
 // Magic Values
