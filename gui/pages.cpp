@@ -55,6 +55,7 @@ std::map<std::string, PageSet*> PageManager::mPageSets;
 PageSet* PageManager::mCurrentSet;
 PageSet* PageManager::mBaseSet = NULL;
 MouseCursor *PageManager::mMouseCursor = NULL;
+HardwareKeyboard *PageManager::mHardwareKeyboard = NULL;
 
 // Helper routine to convert a string to a color declaration
 int ConvertStrToColor(std::string str, COLOR* color)
@@ -65,7 +66,7 @@ int ConvertStrToColor(std::string str, COLOR* color)
 
 	// Translate variables
 	DataManager::GetValue(str, str);
-	
+
 	// Look for some defaults
 	if (str == "black")			return 0;
 	else if (str == "white")	{ color->red = color->green = color->blue = 255; return 0; }
@@ -149,8 +150,8 @@ int ActionObject::SetActionPos(int x, int y, int w, int h)
 	if (x < 0 || y < 0)
 		return -1;
 
-	mActionX = x; 
-	mActionY = y; 
+	mActionX = x;
+	mActionY = y;
 	if (w || h)
 	{
 		mActionW = w;
@@ -159,7 +160,7 @@ int ActionObject::SetActionPos(int x, int y, int w, int h)
 	return 0;
 }
 
-Page::Page(xml_node<>* page, xml_node<>* templates /* = NULL */)
+Page::Page(xml_node<>* page, std::vector<xml_node<>*> *templates /* = NULL */)
 {
 	mTouchStart = NULL;
 
@@ -199,7 +200,7 @@ Page::~Page()
 		delete *itr;
 }
 
-bool Page::ProcessNode(xml_node<>* page, xml_node<>* templates /* = NULL */, int depth /* = 0 */)
+bool Page::ProcessNode(xml_node<>* page, std::vector<xml_node<>*> *templates /* = NULL */, int depth /* = 0 */)
 {
 	if (depth == 10)
 	{
@@ -346,24 +347,31 @@ bool Page::ProcessNode(xml_node<>* page, xml_node<>* templates /* = NULL */, int
 			else
 			{
 				std::string name = child->first_attribute("name")->value();
+				xml_node<>* node;
+				bool node_found = false;
 
 				// We need to find the correct template
-				xml_node<>* node;
-				node = templates->first_node("template");
+				for (std::vector<xml_node<>*>::iterator itr = templates->begin(); itr != templates->end(); itr++) {
+					node = (*itr)->first_node("template");
 
-				while (node)
-				{
-					if (!node->first_attribute("name"))
-						continue;
-
-					if (name == node->first_attribute("name")->value())
+					while (node)
 					{
-						if (!ProcessNode(node, templates, depth + 1))
-							return false;
-						else
+						if (!node->first_attribute("name"))
+							continue;
+
+						if (name == node->first_attribute("name")->value())
+						{
+							if (!ProcessNode(node, templates, depth + 1))
+								return false;
+							else {
+								node_found = true;
+								break;
+							}
+						}
+						if (node_found)
 							break;
+						node = node->next_sibling("template");
 					}
-					node = node->next_sibling("template");
 				}
 			}
 		}
@@ -447,7 +455,7 @@ int Page::NotifyTouch(TOUCH_STATE state, int x, int y)
 	return ret;
 }
 
-int Page::NotifyKey(int key)
+int Page::NotifyKey(int key, bool down)
 {
 	std::vector<ActionObject*>::reverse_iterator iter;
 
@@ -455,16 +463,17 @@ int Page::NotifyKey(int key)
 	if (mActions.size() == 0)
 		return 1;
 
+	int ret = 1;
 	// We work backwards, from top-most element to bottom-most element
 	for (iter = mActions.rbegin(); iter != mActions.rend(); iter++)
 	{
-		int ret = (*iter)->NotifyKey(key);
-		if (ret == 0)
-			return 0;
-		else if (ret < 0)
-			LOGERR("An action handler has returned an error");
+		ret = (*iter)->NotifyKey(key, down);
+		if (ret < 0) {
+			LOGERR("An action handler has returned an error\n");
+			ret = 1;
+		}
 	}
-	return 1;
+	return ret;
 }
 
 int Page::NotifyKeyboard(int key)
@@ -545,6 +554,8 @@ PageSet::~PageSet()
 {
 	for (std::vector<Page*>::iterator itr = mPages.begin(); itr != mPages.end(); ++itr)
 		delete *itr;
+	for (std::vector<xml_node<>*>::iterator itr2 = templates.begin(); itr2 != templates.end(); ++itr2)
+		delete *itr2;
 
 	delete mResources;
 	free(mXmlFile);
@@ -554,8 +565,10 @@ int PageSet::Load(ZipArchive* package)
 {
 	xml_node<>* parent;
 	xml_node<>* child;
-	xml_node<>* templates;
- 
+	xml_node<>* xmltemplate;
+	xml_node<>* blank_templates;
+	int pages_loaded = -1, ret;
+
 	parent = mDoc.first_node("recovery");
 	if (!parent)
 		parent = mDoc.first_node("install");
@@ -578,13 +591,134 @@ int PageSet::Load(ZipArchive* package)
 
 	LOGINFO("Loading pages...\n");
 	// This may be NULL if no templates are present
-	templates = parent->first_node("templates");
+	xmltemplate = parent->first_node("templates");
+	if (xmltemplate)
+		templates.push_back(xmltemplate);
 
 	child = parent->first_node("pages");
-	if (!child)
-		return -1;
+	if (child) {
+		if (LoadPages(child)) {
+			LOGERR("PageSet::Load returning -1\n");
+			return -1;
+		}
+	}
+	
+	return CheckInclude(package, &mDoc);
+}
 
-	return LoadPages(child, templates);
+int PageSet::CheckInclude(ZipArchive* package, xml_document<> *parentDoc)
+{
+	xml_node<>* par;
+	xml_node<>* par2;
+	xml_node<>* chld;
+	xml_node<>* parent;
+	xml_node<>* child;
+	xml_node<>* xmltemplate;
+	long len;
+	char* xmlFile = NULL;
+	string filename;
+	xml_document<> doc;
+
+	par = parentDoc->first_node("recovery");
+	if (!par) {
+		par = parentDoc->first_node("install");
+	}
+	if (!par) {
+		return 0;
+	}
+
+	par2 = par->first_node("include");
+	if (!par2)
+		return 0;
+	chld = par2->first_node("xmlfile");
+	while (chld != NULL) {
+		xml_attribute<>* attr = chld->first_attribute("name");
+		if (!attr)
+			break;
+
+		LOGINFO("PageSet::CheckInclude loading filename: '%s'\n", filename.c_str());
+		if (!package) {
+			// We can try to load the XML directly...
+			filename = "/res/";
+			filename += attr->value();
+			struct stat st;
+			if(stat(filename.c_str(),&st) != 0) {
+				LOGERR("Unable to locate '%s'\n", filename.c_str());
+				return -1;
+			}
+
+			len = st.st_size;
+			xmlFile = (char*) malloc(len + 1);
+			if (!xmlFile)
+				return -1;
+
+			int fd = open(filename.c_str(), O_RDONLY);
+			if (fd == -1)
+				return -1;
+
+			read(fd, xmlFile, len);
+			close(fd);
+		} else {
+			filename += attr->value();
+			const ZipEntry* ui_xml = mzFindZipEntry(package, filename.c_str());
+			if (ui_xml == NULL)
+			{
+				LOGERR("Unable to locate '%s' in zip file\n", filename.c_str());
+				return -1;
+			}
+
+			// Allocate the buffer for the file
+			len = mzGetZipEntryUncompLen(ui_xml);
+			xmlFile = (char*) malloc(len + 1);
+			if (!xmlFile)
+				return -1;
+
+			if (!mzExtractZipEntryToBuffer(package, ui_xml, (unsigned char*) xmlFile))
+			{
+				LOGERR("Unable to extract '%s'\n", filename.c_str());
+				return -1;
+			}
+		}
+		doc.parse<0>(xmlFile);
+
+		parent = doc.first_node("recovery");
+		if (!parent)
+			parent = doc.first_node("install");
+
+		// Now, let's parse the XML
+		LOGINFO("Loading included resources...\n");
+		child = parent->first_node("resources");
+		if (child)
+			mResources->LoadResources(child, package);
+
+		LOGINFO("Loading included variables...\n");
+		child = parent->first_node("variables");
+		if (child)
+			LoadVariables(child);
+
+		LOGINFO("Loading mouse cursor...\n");
+		child = parent->first_node("mousecursor");
+		if(child)
+			PageManager::LoadCursorData(child);
+
+		LOGINFO("Loading included pages...\n");
+		// This may be NULL if no templates are present
+		xmltemplate = parent->first_node("templates");
+		if (xmltemplate)
+			templates.push_back(xmltemplate);
+
+		child = parent->first_node("pages");
+		if (child)
+			if (LoadPages(child))
+				return -1;
+
+		if (CheckInclude(package, &doc))
+			return -1;
+
+		chld = chld->next_sibling("xmlfile");
+	}
+
+	return 0;
 }
 
 int PageSet::SetPage(std::string page)
@@ -649,7 +783,32 @@ int PageSet::LoadVariables(xml_node<>* vars)
 		if(name && value)
 		{
 			p = persist ? atoi(persist->value()) : 0;
-			DataManager::SetValue(name->value(), value->value(), p);
+			string temp = value->value();
+			string valstr = gui_parse_text(temp);
+
+			if (valstr.find("+") != string::npos) {
+				string val1str = valstr;
+				val1str = val1str.substr(0, val1str.find('+'));
+				string val2str = valstr;
+				val2str = val2str.substr(val2str.find('+') + 1, string::npos);
+				int val1 = atoi(val1str.c_str());
+				int val2 = atoi(val2str.c_str());
+				int val = val1 + val2;
+
+				DataManager::SetValue(name->value(), val, p);
+			} else if (valstr.find("-") != string::npos) {
+				string val1str = valstr;
+				val1str = val1str.substr(0, val1str.find('-'));
+				string val2str = valstr;
+				val2str = val2str.substr(val2str.find('-') + 1, string::npos);
+				int val1 = atoi(val1str.c_str());
+				int val2 = atoi(val2str.c_str());
+				int val = val1 - val2;
+
+				DataManager::SetValue(name->value(), val, p);
+			} else {
+				DataManager::SetValue(name->value(), valstr, p);
+			}
 		}
 
 		child = child->next_sibling("variable");
@@ -657,7 +816,7 @@ int PageSet::LoadVariables(xml_node<>* vars)
 	return 0;
 }
 
-int PageSet::LoadPages(xml_node<>* pages, xml_node<>* templates /* = NULL */)
+int PageSet::LoadPages(xml_node<>* pages)
 {
 	xml_node<>* child;
 
@@ -667,7 +826,7 @@ int PageSet::LoadPages(xml_node<>* pages, xml_node<>* templates /* = NULL */)
 	child = pages->first_node("page");
 	while (child != NULL)
 	{
-		Page* page = new Page(child, templates);
+		Page* page = new Page(child, &templates);
 		if (page->GetName().empty())
 		{
 			LOGERR("Unable to process load page\n");
@@ -719,12 +878,12 @@ int PageSet::NotifyTouch(TOUCH_STATE state, int x, int y)
 	return (mCurrentPage ? mCurrentPage->NotifyTouch(state, x, y) : -1);
 }
 
-int PageSet::NotifyKey(int key)
+int PageSet::NotifyKey(int key, bool down)
 {
 	if (mOverlayPage)
-		return (mOverlayPage->NotifyKey(key));
+		return (mOverlayPage->NotifyKey(key, down));
 
-	return (mCurrentPage ? mCurrentPage->NotifyKey(key) : -1);
+	return (mCurrentPage ? mCurrentPage->NotifyKey(key, down) : -1);
 }
 
 int PageSet::NotifyKeyboard(int key)
@@ -790,13 +949,13 @@ int PageManager::LoadPackage(std::string name, std::string package, std::string 
 			LOGERR("Unable to locate ui.xml in zip file\n");
 			goto error;
 		}
-	
+
 		// Allocate the buffer for the file
 		len = mzGetZipEntryUncompLen(ui_xml);
 		xmlFile = (char*) malloc(len + 1);
 		if (!xmlFile)
 			goto error;
-	
+
 		if (!mzExtractZipEntryToBuffer(&zip, ui_xml, (unsigned char*) xmlFile))
 		{
 			LOGERR("Unable to extract ui.xml\n");
@@ -821,7 +980,7 @@ int PageManager::LoadPackage(std::string name, std::string package, std::string 
 	{
 		LOGERR("Package %s failed to load.\n", name.c_str());
 	}
-	
+
 	// The first successful package we loaded is the base
 	if (mBaseSet == NULL)
 		mBaseSet = mCurrentSet;
@@ -951,6 +1110,16 @@ int PageManager::SwitchToConsole(void)
 	return 0;
 }
 
+int PageManager::EndConsole(void)
+{
+	if (mCurrentSet && mBaseSet) {
+		delete mCurrentSet;
+		mCurrentSet = mBaseSet;
+		return 0;
+	}
+	return -1;
+}
+
 int PageManager::IsCurrentPage(Page* page)
 {
 	return (mCurrentSet ? mCurrentSet->IsCurrentPage(page) : 0);
@@ -962,6 +1131,13 @@ int PageManager::Render(void)
 	if(mMouseCursor)
 		mMouseCursor->Render();
 	return res;
+}
+
+HardwareKeyboard *PageManager::GetHardwareKeyboard()
+{
+	if(!mHardwareKeyboard)
+		mHardwareKeyboard = new HardwareKeyboard();
+	return mHardwareKeyboard;
 }
 
 MouseCursor *PageManager::GetMouseCursor()
@@ -1002,9 +1178,9 @@ int PageManager::NotifyTouch(TOUCH_STATE state, int x, int y)
 	return (mCurrentSet ? mCurrentSet->NotifyTouch(state, x, y) : -1);
 }
 
-int PageManager::NotifyKey(int key)
+int PageManager::NotifyKey(int key, bool down)
 {
-	return (mCurrentSet ? mCurrentSet->NotifyKey(key) : -1);
+	return (mCurrentSet ? mCurrentSet->NotifyKey(key, down) : -1);
 }
 
 int PageManager::NotifyKeyboard(int key)

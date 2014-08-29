@@ -14,7 +14,6 @@
 
 LOCAL_PATH := $(call my-dir)
 
-
 include $(CLEAR_VARS)
 
 TARGET_RECOVERY_GUI := true
@@ -25,6 +24,8 @@ LOCAL_SRC_FILES := \
     twrpTar.cpp \
 	twrpDU.cpp \
     twrpDigest.cpp \
+    find_file.cpp \
+    infomanager.cpp
 
 LOCAL_SRC_FILES += \
     data.cpp \
@@ -260,14 +261,14 @@ endif
 ifneq ($(TW_BRIGHTNESS_PATH),)
 	LOCAL_CFLAGS += -DTW_BRIGHTNESS_PATH=$(TW_BRIGHTNESS_PATH)
 endif
+ifneq ($(TW_SECONDARY_BRIGHTNESS_PATH),)
+	LOCAL_CFLAGS += -DTW_SECONDARY_BRIGHTNESS_PATH=$(TW_SECONDARY_BRIGHTNESS_PATH)
+endif
 ifneq ($(TW_MAX_BRIGHTNESS),)
 	LOCAL_CFLAGS += -DTW_MAX_BRIGHTNESS=$(TW_MAX_BRIGHTNESS)
 endif
 ifneq ($(TW_CUSTOM_BATTERY_PATH),)
 	LOCAL_CFLAGS += -DTW_CUSTOM_BATTERY_PATH=$(TW_CUSTOM_BATTERY_PATH)
-endif
-ifeq ($(TARGET_BOARD_PLATFORM),rk30xx)
-    LOCAL_CFLAGS += -DRK3066
 endif
 ifneq ($(TW_EXCLUDE_ENCRYPTED_BACKUPS), true)
     LOCAL_SHARED_LIBRARIES += libopenaes
@@ -335,13 +336,14 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := libaosprecovery
 LOCAL_MODULE_TAGS := eng
 LOCAL_MODULES_TAGS = optional
-ifeq ($(TARGET_BOARD_PLATFORM),rk30xx)
-    LOCAL_CFLAGS += -DRK3066
-endif
 LOCAL_C_INCLUDES := bootable/recovery/libmincrypt/includes
 LOCAL_SRC_FILES = adb_install.cpp bootloader.cpp verifier.cpp mtdutils/mtdutils.c legacy_property_service.c
 LOCAL_SHARED_LIBRARIES += libc liblog libcutils libmtdutils
 LOCAL_STATIC_LIBRARIES += libmincrypttwrp
+
+ifneq ($(BOARD_RECOVERY_BLDRMSG_OFFSET),)
+    LOCAL_CFLAGS += -DBOARD_RECOVERY_BLDRMSG_OFFSET=$(BOARD_RECOVERY_BLDRMSG_OFFSET)
+endif
 
 include $(BUILD_SHARED_LIBRARY)
 
@@ -403,6 +405,9 @@ ifneq ($(TW_NO_EXFAT), true)
 endif
 ifeq ($(TW_INCLUDE_CRYPTO), true)
     include $(commands_recovery_local_path)/crypto/ics/Android.mk
+endif
+ifneq ($(TW_OEM_BUILD),true)
+    include $(commands_recovery_local_path)/orscmd/Android.mk
 endif
 
 # FB2PNG

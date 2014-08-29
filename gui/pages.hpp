@@ -30,11 +30,12 @@ class ActionObject;
 class InputObject;
 class MouseCursor;
 class GUIObject;
+class HardwareKeyboard;
 
 class Page
 {
 public:
-	Page(xml_node<>* page, xml_node<>* templates = NULL);
+	Page(xml_node<>* page, std::vector<xml_node<>*> *templates = NULL);
 	virtual ~Page();
 
 	std::string GetName(void)   { return mName; }
@@ -43,7 +44,7 @@ public:
 	virtual int Render(void);
 	virtual int Update(void);
 	virtual int NotifyTouch(TOUCH_STATE state, int x, int y);
-	virtual int NotifyKey(int key);
+	virtual int NotifyKey(int key, bool down);
 	virtual int NotifyKeyboard(int key);
 	virtual int SetKeyBoardFocus(int inFocus);
 	virtual int NotifyVarChange(std::string varName, std::string value);
@@ -60,7 +61,7 @@ protected:
 	COLOR mBackground;
 
 protected:
-	bool ProcessNode(xml_node<>* page, xml_node<>* templates = NULL, int depth = 0);
+	bool ProcessNode(xml_node<>* page, std::vector<xml_node<>*> *templates = NULL, int depth = 0);
 };
 
 class PageSet
@@ -71,6 +72,7 @@ public:
 
 public:
 	int Load(ZipArchive* package);
+	int CheckInclude(ZipArchive* package, xml_document<> *parentDoc);
 
 	Page* FindPage(std::string name);
 	int SetPage(std::string page);
@@ -84,13 +86,13 @@ public:
 	int Render(void);
 	int Update(void);
 	int NotifyTouch(TOUCH_STATE state, int x, int y);
-	int NotifyKey(int key);
+	int NotifyKey(int key, bool down);
 	int NotifyKeyboard(int key);
 	int SetKeyBoardFocus(int inFocus);
 	int NotifyVarChange(std::string varName, std::string value);
 
 protected:
-	int LoadPages(xml_node<>* pages, xml_node<>* templates = NULL);
+	int LoadPages(xml_node<>* pages);
 	int LoadVariables(xml_node<>* vars);
 
 protected:
@@ -98,6 +100,7 @@ protected:
 	xml_document<> mDoc;
 	ResourceManager* mResources;
 	std::vector<Page*> mPages;
+	std::vector<xml_node<>*> templates;
 	Page* mCurrentPage;
 	Page* mOverlayPage; // This is a special case, used for "locking" the screen
 };
@@ -117,8 +120,9 @@ public:
 	static Resource* FindResource(std::string name);
 	static Resource* FindResource(std::string package, std::string name);
 
-	// Used for console-only mode - Can be reverted via ChangePage
+	// Used for console-only mode
 	static int SwitchToConsole(void);
+	static int EndConsole(void);
 
 	// Helper to identify if a particular page is the active page
 	static int IsCurrentPage(Page* page);
@@ -127,13 +131,15 @@ public:
 	static int Render(void);
 	static int Update(void);
 	static int NotifyTouch(TOUCH_STATE state, int x, int y);
-	static int NotifyKey(int key);
+	static int NotifyKey(int key, bool down);
 	static int NotifyKeyboard(int key);
 	static int SetKeyBoardFocus(int inFocus);
 	static int NotifyVarChange(std::string varName, std::string value);
 
 	static MouseCursor *GetMouseCursor();
 	static void LoadCursorData(xml_node<>* node);
+
+	static HardwareKeyboard *GetHardwareKeyboard();
 
 protected:
 	static PageSet* FindPackage(std::string name);
@@ -143,6 +149,7 @@ protected:
 	static PageSet* mCurrentSet;
 	static PageSet* mBaseSet;
 	static MouseCursor *mMouseCursor;
+	static HardwareKeyboard *mHardwareKeyboard;
 };
 
 #endif  // _PAGES_HEADER_HPP

@@ -143,7 +143,7 @@ AnimationResource::AnimationResource(xml_node<>* node, ZipArchive* pZip)
 		{
 			if (ExtractResource(pZip, "images", fileName.str(), ".png", TMP_RESOURCE_NAME) != 0)
 				break;
-	
+
 			if (res_create_surface(TMP_RESOURCE_NAME, &surface))
 				break;
 
@@ -182,6 +182,11 @@ Resource* ResourceManager::FindResource(std::string name)
 }
 
 ResourceManager::ResourceManager(xml_node<>* resList, ZipArchive* pZip)
+{
+	LoadResources(resList, pZip);
+}
+
+void ResourceManager::LoadResources(xml_node<>* resList, ZipArchive* pZip)
 {
 	xml_node<>* child;
 

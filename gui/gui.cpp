@@ -53,6 +53,8 @@ extern "C"
 #include "../variables.h"
 #include "../partitions.hpp"
 #include "../twrp-functions.hpp"
+#include "../openrecoveryscript.hpp"
+#include "../orscmd/orscmd.h"
 #ifndef TW_NO_SCREEN_TIMEOUT
 #include "blanktimer.hpp"
 #endif
@@ -73,6 +75,7 @@ static int gForceRender = 0;
 pthread_mutex_t gForceRendermutex;
 static int gNoAnimation = 1;
 static int gGuiInputRunning = 0;
+static int gCmdLineRunning = 0;
 #ifndef TW_NO_SCREEN_TIMEOUT
 blanktimer blankTimer;
 #endif
@@ -187,8 +190,8 @@ static void * input_thread(void *cookie)
 	static int x = 0, y = 0;
 	static int lshift = 0, rshift = 0;
 	static struct timeval touchStart;
-	HardwareKeyboard kb;
 	string seconds;
+	HardwareKeyboard *kb = PageManager::GetHardwareKeyboard();
 	MouseCursor *cursor = PageManager::GetMouseCursor();
 
 #ifndef TW_NO_SCREEN_TIMEOUT
@@ -249,7 +252,7 @@ static void * input_thread(void *cookie)
 #endif
 				gettimeofday(&touchStart, NULL);
 				key_repeat = 2;
-				kb.KeyRepeat();
+				kb->KeyRepeat();
 #ifndef TW_NO_SCREEN_TIMEOUT
 				blankTimer.resetTimerAndUnblank();
 #endif
@@ -261,7 +264,7 @@ static void * input_thread(void *cookie)
 				LOGERR("KEY_REPEAT: %d,%d\n", x, y);
 #endif
 				gettimeofday(&touchStart, NULL);
-				kb.KeyRepeat();
+				kb->KeyRepeat();
 #ifndef TW_NO_SCREEN_TIMEOUT
 				blankTimer.resetTimerAndUnblank();
 #endif
@@ -296,17 +299,19 @@ static void * input_thread(void *cookie)
 			{
 				if (!drag)
 				{
-				//	if( x != 0 && y != 0) {
+					if (x != 0 && y != 0) {
+
 #ifdef _EVENT_LOGGING
-					LOGERR("TOUCH_START: %d,%d\n", x, y);
+						LOGERR("TOUCH_START: %d,%d\n", x, y);
 #endif
-					if (PageManager::NotifyTouch(TOUCH_START, x, y) > 0)
-						state = 1;
-					drag = 1;
-					touch_and_hold = 1;
-					dontwait = 1;
-					key_repeat = 0;
-					gettimeofday(&touchStart, NULL);
+						if (PageManager::NotifyTouch(TOUCH_START, x, y) > 0)
+							state = 1;
+						drag = 1;
+						touch_and_hold = 1;
+						dontwait = 1;
+						key_repeat = 0;
+						gettimeofday(&touchStart, NULL);
+					}
 #ifndef TW_NO_SCREEN_TIMEOUT
 					blankTimer.resetTimerAndUnblank();
 #endif
@@ -356,6 +361,9 @@ static void * input_thread(void *cookie)
 					{
 						cursor->GetPos(x, y);
 
+#ifdef _EVENT_LOGGING
+						LOGERR("TOUCH_RELEASE: %d,%d\n", x, y);
+#endif
 						PageManager::NotifyTouch(TOUCH_RELEASE, x, y);
 
 						touch_and_hold = 0;
@@ -371,15 +379,13 @@ static void * input_thread(void *cookie)
 			else if(ev.code == BTN_SIDE)
 			{
 				if(ev.value == 1)
-					kb.KeyDown(KEY_BACK);
+					kb->KeyDown(KEY_BACK);
 				else
-					kb.KeyUp(KEY_BACK);
-			}
-			else if (ev.value != 0)
-			{
+					kb->KeyUp(KEY_BACK);
+			} else if (ev.value != 0) {
 				// This is a key press
-				if (kb.KeyDown(ev.code))
-				{
+				if (kb->KeyDown(ev.code)) {
+					// Key repeat is enabled for this key
 					key_repeat = 1;
 					touch_and_hold = 0;
 					touch_repeat = 0;
@@ -388,9 +394,7 @@ static void * input_thread(void *cookie)
 #ifndef TW_NO_SCREEN_TIMEOUT
 					blankTimer.resetTimerAndUnblank();
 #endif
-				}
-				else
-				{
+				} else {
 					key_repeat = 0;
 					touch_and_hold = 0;
 					touch_repeat = 0;
@@ -399,11 +403,9 @@ static void * input_thread(void *cookie)
 					blankTimer.resetTimerAndUnblank();
 #endif
 				}
-			}
-			else
-			{
+			} else {
 				// This is a key release
-				kb.KeyUp(ev.code);
+				kb->KeyUp(ev.code);
 				key_repeat = 0;
 				touch_and_hold = 0;
 				touch_repeat = 0;
@@ -432,9 +434,88 @@ static void * input_thread(void *cookie)
 					state = 1;
 				key_repeat = 0;
 			}
-        }
+		}
 	}
 	return NULL;
+}
+
+static void * command_thread(void *cookie)
+{
+	int read_fd;
+	FILE* orsout;
+	char command[1024], result[512];
+
+	LOGINFO("Starting command line thread\n");
+
+	unlink(ORS_INPUT_FILE);
+	if (mkfifo(ORS_INPUT_FILE, 06660) != 0) {
+		LOGINFO("Unable to mkfifo %s\n", ORS_INPUT_FILE);
+		return 0;
+	}
+	unlink(ORS_OUTPUT_FILE);
+	if (mkfifo(ORS_OUTPUT_FILE, 06666) != 0) {
+		LOGINFO("Unable to mkfifo %s\n", ORS_OUTPUT_FILE);
+		unlink(ORS_INPUT_FILE);
+		return 0;
+	}
+
+	read_fd = open(ORS_INPUT_FILE, O_RDONLY);
+	if (read_fd < 0) {
+		LOGINFO("Unable to open %s\n", ORS_INPUT_FILE);
+		unlink(ORS_INPUT_FILE);
+		unlink(ORS_OUTPUT_FILE);
+		return 0;
+	}
+
+	while (!gGuiRunning)
+		sleep(1);
+
+	for (;;) {
+		while (read(read_fd, &command, sizeof(command)) > 0) {
+			command[1022] = '\n';
+			command[1023] = '\0';
+			LOGINFO("Command '%s' received\n", command);
+			orsout = fopen(ORS_OUTPUT_FILE, "w");
+			if (!orsout) {
+				close(read_fd);
+				LOGINFO("Unable to fopen %s\n", ORS_OUTPUT_FILE);
+				unlink(ORS_INPUT_FILE);
+				unlink(ORS_OUTPUT_FILE);
+				return 0;
+			}
+			if (DataManager::GetIntValue("tw_busy") != 0) {
+				strcpy(result, "Failed, operation in progress\n");
+				fprintf(orsout, "%s", result);
+				LOGINFO("Command cannot be performed, operation in progress.\n");
+			} else {
+				if (gui_console_only() == 0) {
+					LOGINFO("Console started successfully\n");
+					gui_set_FILE(orsout);
+					if (strlen(command) > 11 && strncmp(command, "runscript", 9) == 0) {
+						char* filename = command + 11;
+						if (OpenRecoveryScript::copy_script_file(filename) == 0) {
+							LOGERR("Unable to copy script file\n");
+						} else {
+							OpenRecoveryScript::run_script_file();
+						}
+					} else if (strlen(command) > 5 && strncmp(command, "get", 3) == 0) {
+						char* varname = command + 4;
+						string temp;
+						DataManager::GetValue(varname, temp);
+						gui_print("%s = %s\n", varname, temp.c_str());
+					} else if (OpenRecoveryScript::Insert_ORS_Command(command)) {
+						OpenRecoveryScript::run_script_file();
+					}
+					gui_set_FILE(NULL);
+					gGuiConsoleTerminate = 1;
+				}
+			}
+			fclose(orsout);
+		}
+	}
+	close(read_fd);
+	LOGINFO("Command thread exiting\n");
+	return 0;
 }
 
 // This special function will return immediately the first time, but then
@@ -497,6 +578,10 @@ static int runPages(void)
 	for (;;)
 	{
 		loopTimer();
+
+		if (gGuiConsoleRunning) {
+			continue;
+		}
 
 		if (!gForceRender)
 		{
@@ -691,9 +776,6 @@ extern "C" int gui_init(void)
 
 extern "C" int gui_loadResources(void)
 {
-	//    unlink("/sdcard/video.last");
-	//    rename("/sdcard/video.bin", "/sdcard/video.last");
-	//    gRecorder = open("/sdcard/video.bin", O_CREAT | O_WRONLY);
 #ifndef TW_OEM_BUILD
 	int check = 0;
 	DataManager::GetValue(TW_IS_ENCRYPTED, check);
@@ -775,7 +857,15 @@ extern "C" int gui_start(void)
 		pthread_create(&t, NULL, input_thread, NULL);
 		gGuiInputRunning = 1;
 	}
-
+#ifndef TW_OEM_BUILD
+	if (!gCmdLineRunning)
+	{
+		// Start by spinning off an input handler.
+		pthread_t t;
+		pthread_create(&t, NULL, command_thread, NULL);
+		gCmdLineRunning = 1;
+	}
+#endif
 	return runPages();
 }
 
@@ -836,6 +926,9 @@ static void * console_thread(void *cookie)
 		}
 	}
 	gGuiConsoleRunning = 0;
+	gForceRender = 1; // this will kickstart the GUI to render again
+	PageManager::EndConsole();
+	LOGINFO("Console stopping\n");
 	return NULL;
 }
 

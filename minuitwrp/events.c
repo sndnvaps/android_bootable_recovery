@@ -167,11 +167,33 @@ static int vk_init(struct ev *e)
     printf("Event object: %s\n", e->deviceName);
 #endif
 
-    // Blacklist these "input" devices
-    if (strcmp(e->deviceName, "bma250") == 0 || strcmp(e->deviceName, "bma150") == 0 || strcmp(e->deviceName, "accelerometer") == 0)
+#ifdef WHITELIST_INPUT
+    if (strcmp(e->deviceName, EXPAND(WHITELIST_INPUT)) != 0)
     {
         e->ignored = 1;
     }
+#else
+#ifndef TW_INPUT_BLACKLIST
+    // Blacklist these "input" devices
+    if (strcmp(e->deviceName, "bma250") == 0 || strcmp(e->deviceName, "bma150") == 0)
+    {
+        printf("blacklisting %s input device\n", e->deviceName);
+        e->ignored = 1;
+    }
+#else
+    char* bl = strdup(EXPAND(TW_INPUT_BLACKLIST));
+    char* blacklist = strtok(bl, "\n");
+
+    while (blacklist != NULL) {
+        if (strcmp(e->deviceName, blacklist) == 0) {
+            printf("blacklisting %s input device\n", blacklist);
+            e->ignored = 1;
+        }
+        blacklist = strtok(NULL, "\n");
+    }
+    free(bl);
+#endif
+#endif
 
     strcat(vk_path, e->deviceName);
 
@@ -184,9 +206,9 @@ static int vk_init(struct ev *e)
         close(vk_fd);
         if (len <= 0)
             return -1;
-    
+
         vks[len] = '\0';
-    
+
         /* Parse a line like:
             keytype:keycode:centerx:centery:width:height:keytype2:keycode2:centerx2:...
         */
@@ -384,6 +406,7 @@ static int vk_modify(struct ev *e, struct input_event *ev)
 {
     static int downX = -1, downY = -1;
     static int discard = 0;
+    static int last_virt_key = 0;
     static int lastWasSynReport = 0;
     static int touchReleaseOnNextSynReport = 0;
 	static int use_tracking_id_negative_as_touch_release = 0; // On some devices, type: 3  code: 39  value: -1, aka EV_ABS ABS_MT_TRACKING_ID -1 indicates a true touch release
@@ -593,7 +616,11 @@ static int vk_modify(struct ev *e, struct input_event *ev)
         if (discard)
         {
             discard = 0;
-            return 1;
+
+            // Send the keyUp event
+            ev->type = EV_KEY;
+            ev->code = last_virt_key;
+            ev->value = 0;
         }
         return 0;
     }
@@ -651,9 +678,11 @@ static int vk_modify(struct ev *e, struct input_event *ev)
                 ev->code = e->vks[i].scancode;
                 ev->value = 1;
 
+                last_virt_key = e->vks[i].scancode;
+
                 vibrate(VIBRATOR_TIME_MS);
 
-                // Mark that all further movement until lift is discard, 
+                // Mark that all further movement until lift is discard,
                 // and make sure we don't come back into this area
                 discard = 1;
                 downX = 0;

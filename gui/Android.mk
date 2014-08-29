@@ -1,6 +1,8 @@
 LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
+LOCAL_CFLAGS := -fno-strict-aliasing
+
 LOCAL_SRC_FILES := \
     gui.cpp \
     resources.cpp \
@@ -51,14 +53,6 @@ endif
 ifneq ($(TW_EXTERNAL_STORAGE_PATH),)
 	LOCAL_CFLAGS += -DTW_EXTERNAL_STORAGE_PATH=$(TW_EXTERNAL_STORAGE_PATH)
 endif
-ifneq ($(TW_BRIGHTNESS_PATH),)
-	LOCAL_CFLAGS += -DTW_BRIGHTNESS_PATH=$(TW_BRIGHTNESS_PATH)
-endif
-ifneq ($(TW_MAX_BRIGHTNESS),)
-	LOCAL_CFLAGS += -DTW_MAX_BRIGHTNESS=$(TW_MAX_BRIGHTNESS)
-else
-	LOCAL_CFLAGS += -DTW_MAX_BRIGHTNESS=255
-endif
 ifneq ($(TW_NO_SCREEN_BLANK),)
 	LOCAL_CFLAGS += -DTW_NO_SCREEN_BLANK
 endif
@@ -98,29 +92,41 @@ LOCAL_MODULE := twrp
 LOCAL_MODULE_TAGS := eng
 LOCAL_MODULE_CLASS := RECOVERY_EXECUTABLES
 LOCAL_MODULE_PATH := $(TARGET_RECOVERY_ROOT_OUT)/res
+TWRP_RES_LOC := $(commands_recovery_local_path)/gui/devices/common/res
+TWRP_COMMON_XML := $(hide) echo "No common TWRP XML resources"
 
-TWRP_RES_LOC := $(commands_recovery_local_path)/gui/devices
-TWRP_RES_GEN := $(intermediates)/twrp
-
-ifneq ($(TW_USE_TOOLBOX), true)
-$(TWRP_RES_GEN):
-	mkdir -p $(TARGET_RECOVERY_ROOT_OUT)/res/
-	cp -fr $(TWRP_RES_LOC)/common/res/* $(TARGET_RECOVERY_ROOT_OUT)/res/
-	cp -fr $(TWRP_RES_LOC)/$(DEVICE_RESOLUTION)/res/* $(TARGET_RECOVERY_ROOT_OUT)/res/
-	mkdir -p $(TARGET_RECOVERY_ROOT_OUT)/sbin/
-	ln -sf /sbin/busybox $(TARGET_RECOVERY_ROOT_OUT)/sbin/sh
-	ln -sf /sbin/pigz $(TARGET_RECOVERY_ROOT_OUT)/sbin/gzip
-	ln -sf /sbin/unpigz $(TARGET_RECOVERY_ROOT_OUT)/sbin/gunzip
+ifeq ($(TW_CUSTOM_THEME),)
+	PORTRAIT := 320x480 480x800 480x854 540x960 720x1280 800x1280 1080x1920 1200x1920 1440x2560 1600x2560
+	LANDSCAPE := 800x480 1024x600 1024x768 1280x800 1920x1200 2560x1600
+	WATCH := 240x240 280x280 320x320
+	TWRP_THEME_LOC := $(commands_recovery_local_path)/gui/devices/$(DEVICE_RESOLUTION)/res
+	ifneq ($(filter $(DEVICE_RESOLUTION), $(PORTRAIT)),)
+		TWRP_COMMON_XML := cp -fr $(commands_recovery_local_path)/gui/devices/portrait/res/* $(TARGET_RECOVERY_ROOT_OUT)/res/
+	else ifneq ($(filter $(DEVICE_RESOLUTION), $(LANDSCAPE)),)
+		TWRP_COMMON_XML := cp -fr $(commands_recovery_local_path)/gui/devices/landscape/res/* $(TARGET_RECOVERY_ROOT_OUT)/res/
+	else ifneq ($(filter $(DEVICE_RESOLUTION), $(WATCH)),)
+		TWRP_COMMON_XML := cp -fr $(commands_recovery_local_path)/gui/devices/watch/res/* $(TARGET_RECOVERY_ROOT_OUT)/res/
+	endif
 else
+	TWRP_THEME_LOC := $(TW_CUSTOM_THEME)
+endif
+TWRP_RES_GEN := $(intermediates)/twrp
+ifneq ($(TW_USE_TOOLBOX), true)
+	TWRP_SH_TARGET := /sbin/busybox
+else
+	TWRP_SH_TARGET := /sbin/mksh
+endif
+
 $(TWRP_RES_GEN):
 	mkdir -p $(TARGET_RECOVERY_ROOT_OUT)/res/
-	cp -fr $(TWRP_RES_LOC)/common/res/* $(TARGET_RECOVERY_ROOT_OUT)/res/
-	cp -fr $(TWRP_RES_LOC)/$(DEVICE_RESOLUTION)/res/* $(TARGET_RECOVERY_ROOT_OUT)/res/
+	cp -fr $(TWRP_RES_LOC)/* $(TARGET_RECOVERY_ROOT_OUT)/res/
+	cp -fr $(TWRP_THEME_LOC)/* $(TARGET_RECOVERY_ROOT_OUT)/res/
+	$(TWRP_COMMON_XML)
 	mkdir -p $(TARGET_RECOVERY_ROOT_OUT)/sbin/
-	ln -sf /sbin/mksh $(TARGET_RECOVERY_ROOT_OUT)/sbin/sh
+	ln -sf $(TWRP_SH_TARGET) $(TARGET_RECOVERY_ROOT_OUT)/sbin/sh
 	ln -sf /sbin/pigz $(TARGET_RECOVERY_ROOT_OUT)/sbin/gzip
 	ln -sf /sbin/unpigz $(TARGET_RECOVERY_ROOT_OUT)/sbin/gunzip
-endif
+
 
 LOCAL_GENERATED_SOURCES := $(TWRP_RES_GEN)
 LOCAL_SRC_FILES := twrp $(TWRP_RES_GEN)
