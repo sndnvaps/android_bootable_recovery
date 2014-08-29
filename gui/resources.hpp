@@ -28,7 +28,7 @@ protected:
 };
 
 typedef enum {
-	TOUCH_START = 0, 
+	TOUCH_START = 0,
 	TOUCH_DRAG = 1,
 	TOUCH_RELEASE = 2,
 	TOUCH_HOLD = 3,
@@ -81,6 +81,7 @@ class ResourceManager
 public:
 	ResourceManager(xml_node<>* resList, ZipArchive* pZip);
 	virtual ~ResourceManager();
+	void LoadResources(xml_node<>* resList, ZipArchive* pZip);
 
 public:
 	Resource* FindResource(std::string name);

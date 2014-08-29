@@ -14,7 +14,6 @@
 
 LOCAL_PATH := $(call my-dir)
 
-
 include $(CLEAR_VARS)
 
 TARGET_RECOVERY_GUI := true
@@ -25,7 +24,8 @@ LOCAL_SRC_FILES := \
     twrpTar.cpp \
 	twrpDU.cpp \
     twrpDigest.cpp \
-    find_file.cpp
+    find_file.cpp \
+    infomanager.cpp
 
 LOCAL_SRC_FILES += \
     data.cpp \
@@ -261,6 +261,9 @@ endif
 ifneq ($(TW_BRIGHTNESS_PATH),)
 	LOCAL_CFLAGS += -DTW_BRIGHTNESS_PATH=$(TW_BRIGHTNESS_PATH)
 endif
+ifneq ($(TW_SECONDARY_BRIGHTNESS_PATH),)
+	LOCAL_CFLAGS += -DTW_SECONDARY_BRIGHTNESS_PATH=$(TW_SECONDARY_BRIGHTNESS_PATH)
+endif
 ifneq ($(TW_MAX_BRIGHTNESS),)
 	LOCAL_CFLAGS += -DTW_MAX_BRIGHTNESS=$(TW_MAX_BRIGHTNESS)
 endif
@@ -338,6 +341,10 @@ LOCAL_SRC_FILES = adb_install.cpp bootloader.cpp verifier.cpp mtdutils/mtdutils.
 LOCAL_SHARED_LIBRARIES += libc liblog libcutils libmtdutils
 LOCAL_STATIC_LIBRARIES += libmincrypttwrp
 
+ifneq ($(BOARD_RECOVERY_BLDRMSG_OFFSET),)
+    LOCAL_CFLAGS += -DBOARD_RECOVERY_BLDRMSG_OFFSET=$(BOARD_RECOVERY_BLDRMSG_OFFSET)
+endif
+
 include $(BUILD_SHARED_LIBRARY)
 
 commands_recovery_local_path := $(LOCAL_PATH)
@@ -398,6 +405,9 @@ ifneq ($(TW_NO_EXFAT), true)
 endif
 ifeq ($(TW_INCLUDE_CRYPTO), true)
     include $(commands_recovery_local_path)/crypto/ics/Android.mk
+endif
+ifneq ($(TW_OEM_BUILD),true)
+    include $(commands_recovery_local_path)/orscmd/Android.mk
 endif
 
 # FB2PNG
