@@ -118,8 +118,11 @@ GUIPartitionList::GUIPartitionList(xml_node<>* node) : GUIObject(node)
 		}
 	}
 	child = node->first_node("text");
-	if (child)  mHeaderText = child->value();
-
+	if (child)  {
+        xml_attribute<>* id = child->first_attribute("id");
+        if (id)	mHeaderText = LanguageManager::parse(id->value());//load multi languages
+        if (mText == "")	mHeaderText = child->value();
+        }	
 	memset(&mHighlightColor, 0, sizeof(COLOR));
 	child = node->first_node("highlight");
 	if (child) {
