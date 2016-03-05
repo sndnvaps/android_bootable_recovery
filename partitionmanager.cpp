@@ -855,7 +855,7 @@ bool TWPartitionManager::Restore_Partition(TWPartition* Part, string Restore_Nam
 	}
 	time(&Stop);
 	TWFunc::SetPerformanceMode(false);
-	gui_msg(Msg("restort_part_done=[{1} done ({2} seconds)]")(Part->Backup_Display_Name)((int)difftime(Stop, Start)));
+	gui_msg(Msg("restore_part_done=[{1} done ({2} seconds)]")(Part->Backup_Display_Name)((int)difftime(Stop, Start)));
 	return true;
 }
 
@@ -1039,7 +1039,8 @@ void TWPartitionManager::Set_Restore_Files(string Restore_Name) {
 			Part->Backup_FileName.resize(Part->Backup_FileName.size() - strlen(extn) + 3);
 		}
 
-		Restore_List += Part->Backup_Path + ";";
+		if (!Part->Is_SubPartition)
+			Restore_List += Part->Backup_Path + ";";
 	}
 	closedir(d);
 
@@ -1516,7 +1517,7 @@ TWPartition* TWPartitionManager::Find_Next_Storage(string Path, bool Exclude_Dat
 	if (!Path.empty()) {
 		string Search_Path = TWFunc::Get_Root_Path(Path);
 		for (; iter != Partitions.end(); iter++) {
-			if (Exclude_Data_Media && (*iter)->Has_Data_Media) {
+			if ((*iter)->Mount_Point == Search_Path) {
 				iter++;
 				break;
 			}
@@ -1595,7 +1596,7 @@ int TWPartitionManager::usb_storage_enable(void) {
 			}
 			sprintf(lun_file, CUSTOM_LUN_FILE, 1);
 			Mount2 = Find_Next_Storage(Mount1->Mount_Point, true);
-			if (Mount2) {
+			if (Mount2 && Mount2->Mount_Point != Mount1->Mount_Point) {
 				Open_Lun_File(Mount2->Mount_Point, lun_file);
 			}
 		} else {
@@ -2412,4 +2413,17 @@ void TWPartitionManager::Decrypt_Adopted() {
 	LOGINFO("Decrypt_Adopted: no crypto support\n");
 	return;
 #endif
+}
+
+void TWPartitionManager::Remove_Partition_By_Path(string Path) {
+	std::vector<TWPartition*>::iterator iter;
+	string Local_Path = TWFunc::Get_Root_Path(Path);
+
+	for (iter = Partitions.begin(); iter != Partitions.end(); iter++) {
+		if ((*iter)->Mount_Point == Local_Path || (!(*iter)->Symlink_Mount_Point.empty() && (*iter)->Symlink_Mount_Point == Local_Path)) {
+			LOGINFO("Found and erasing '%s' from partition list\n", Local_Path.c_str());
+			Partitions.erase(iter);
+			return;
+		}
+	}
 }

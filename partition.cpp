@@ -68,6 +68,7 @@ extern "C" {
 #include <sys/xattr.h>
 #include <linux/xattr.h>
 #endif
+#include <sparse_format.h>
 
 using namespace std;
 
@@ -407,12 +408,12 @@ bool TWPartition::Process_Fstab_Line(string Line, bool Display_Error) {
 		} else if (Mount_Point == "/system_image") {
 			Display_Name = "System Image";
 			Backup_Display_Name = Display_Name;
-			Can_Flash_Img = false;
+			Can_Flash_Img = true;
 			Can_Be_Backed_Up = true;
 		} else if (Mount_Point == "/vendor_image") {
 			Display_Name = "Vendor Image";
 			Backup_Display_Name = Display_Name;
-			Can_Flash_Img = false;
+			Can_Flash_Img = true;
 			Can_Be_Backed_Up = true;
 		}
 	}
@@ -1223,10 +1224,10 @@ bool TWPartition::Wipe(string New_File_System) {
 		if (Has_Data_Media && recreate_media) {
 			Recreate_Media_Folder();
 		}
+		if (Is_Storage && Mount(false))
+			PartitionManager.Add_MTP_Storage(MTP_Storage_ID);
 	}
-	if (Is_Storage) {
-		PartitionManager.Add_MTP_Storage(MTP_Storage_ID);
-	}
+
 	return wiped;
 }
 
@@ -2375,7 +2376,24 @@ bool TWPartition::Flash_Image_DD(string Filename) {
 	string Command;
 
 	gui_msg(Msg("flashing=Flashing {1}...")(Display_Name));
-	Command = "dd bs=8388608 if='" + Filename + "' of=" + Actual_Block_Device;
+
+	uint32_t magic = 0;
+	int fd = open(Filename.c_str(), O_RDONLY);
+	if (fd < 0) {
+		gui_msg(Msg(msg::kError, "error_opening_strerr=Error opening: '{1}' ({2})")(Filename)(strerror(errno)));
+		return false;
+	}
+	if (read(fd, &magic, sizeof(magic)) != sizeof(magic)) {
+		gui_msg(Msg(msg::kError, "error_opening_strerr=Error opening: '{1}' ({2})")(Filename)(strerror(errno)));
+		close(fd);
+		return false;
+	}
+	close(fd);
+	if (magic == SPARSE_HEADER_MAGIC) {
+		Command = "simg2img '" + Filename + "' " + Actual_Block_Device;
+	} else {
+		Command = "dd bs=8388608 if='" + Filename + "' of=" + Actual_Block_Device;
+	}
 	LOGINFO("Flash command: '%s'\n", Command.c_str());
 	TWFunc::Exec_Cmd(Command);
 	return true;
@@ -2508,6 +2526,17 @@ int TWPartition::Decrypt_Adopted() {
 				cryptfs_revert_ext_volume(part_guid);
 				ret = 1;
 			} else {
+				UnMount(false);
+				Has_Android_Secure = false;
+				Symlink_Path = "";
+				Symlink_Mount_Point = "";
+				Backup_Name = Mount_Point.substr(1);
+				Backup_Path = Mount_Point;
+				TWPartition* sdext = PartitionManager.Find_Partition_By_Path("/sd-ext");
+				if (sdext && sdext->Actual_Block_Device == Adopted_Block_Device) {
+					LOGINFO("Removing /sd-ext from partition list due to adopted storage\n");
+					PartitionManager.Remove_Partition_By_Path("/sd-ext");
+				}
 				Setup_Data_Media();
 				Recreate_Media_Folder();
 				Wipe_Available_in_GUI = true;
